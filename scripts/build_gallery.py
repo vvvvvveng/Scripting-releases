@@ -319,6 +319,7 @@ def write_gallery(entries):
   const lightboxImg = document.getElementById('lightboxImg');
   let pressTimer = null;
   let previewed = false;
+  let suppressClick = false;
 
   function closeLightbox() {
     lightbox.classList.remove('open');
@@ -334,10 +335,14 @@ def write_gallery(entries):
 
     function clearPress() {
       if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
-      if (previewed) { closeLightbox(); }
+      if (previewed) {
+        closeLightbox();
+        suppressClick = true;   // 长按预览过，拦截随后的 click，避免误触导入
+      }
     }
     function startPress() {
       clearPress();
+      suppressClick = false;    // 新的触摸/按压开始，重置拦截
       pressTimer = setTimeout(function () {
         previewed = true;
         lightboxImg.style.backgroundImage = "url('" + imgSrc + "')";
@@ -353,7 +358,7 @@ def write_gallery(entries):
     card.addEventListener('mouseup', clearPress);
     card.addEventListener('mouseleave', clearPress);
     card.addEventListener('click', function (e) {
-      if (previewed) { e.preventDefault(); e.stopPropagation(); previewed = false; }
+      if (previewed || suppressClick) { e.preventDefault(); e.stopPropagation(); previewed = false; suppressClick = false; }
     });
   });
 </script>
