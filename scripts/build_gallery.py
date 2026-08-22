@@ -77,7 +77,7 @@ def update_readme(entries):
         img_md = (
             f"![{e['name']}]({quote(str(e['img']), safe='/')})"
             if e["img"]
-            else "—"
+            else "--"
         )
         file_rel = quote(str(e["file"]), safe="/")
         rows.append(f"| {img_md} | **{e['name']}** | {e['size']} | [下载]({file_rel}) |")
@@ -98,13 +98,14 @@ def update_readme(entries):
 
 
 def write_gallery(entries):
-    raw_base = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}/"
+    # 图片用相对路径（gallery.html 与 项目展示图/ 同处仓库根目录），
+    # 这样在 GitHub Pages 上图片走 github.io 域名加载，国内访问更稳定。
     blob_base = f"https://github.com/{REPO}/blob/{BRANCH}/"
 
     cards = []
     for e in entries:
         if e["img"]:
-            thumb = f'<img src="{raw_base + quote(str(e["img"]), safe="/")}" alt="{e["name"]}" loading="lazy">'
+            thumb = f'<img src="{quote(str(e["img"]), safe="/")}" alt="{e["name"]}" loading="lazy">'
         else:
             thumb = '<div class="noimg">🖥️</div>'
         href = blob_base + quote(str(e["file"]), safe="/")
