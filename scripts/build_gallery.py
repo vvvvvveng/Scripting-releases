@@ -205,8 +205,10 @@ def write_gallery(entries):
     # 卡片点击跳转 Scripting 一键导入页，长按卡片预览展示图。
     # 预览用 CSS 背景图而非 <img>：背景图不是"图片"，长按时不会触发
     # iOS 的选中/放大镜/图片菜单，预览图永远清晰原样显示。
-    # 更新时间固定在卡片右下角；版本号后两个图标分别弹窗显示
-    # 软件介绍（script.json 的 description）与最近更新说明（changelog）。
+    # 更新时间固定在卡片右下角；版本号在脚本名前面，ℹ️📝 两个图标在脚本名后面，
+    # 分别弹窗显示软件介绍（script.json 的 description）与最近更新说明（changelog）。
+    # lightbox 预览层必须配套 .lightbox / .lightbox.open / .lightbox-img 样式，
+    # 否则长按触发后没有可见的预览层（曾因此丢失过长按预览功能）。
 
     cards = []
     for e in entries:
@@ -224,15 +226,15 @@ def write_gallery(entries):
             '\n      <a class="card" href="{}" data-mtime="{}" target="_blank">\n'
             '        {}\n'
             '        <div class="meta">\n'
-            '          <div class="name">{}</div>\n'
-            '          <div class="info-row">\n'
-            '            <div class="ver">v{}</div>\n'
+            '          <div class="title-row">\n'
+            '            <span class="ver">v{}</span>\n'
+            '            <span class="name">{}</span>\n'
             '            <button class="icon-btn" type="button" title="软件介绍" data-content="{}">ℹ️</button>\n'
             '            <button class="icon-btn" type="button" title="最近更新说明" data-content="{}">📝</button>\n'
             '          </div>\n'
             '          <div class="time-bottom">🕒 {}</div>\n'
             "        </div>\n"
-            "      </a>".format(href, mtime, preview, e["name"], read_version(str(e["file"])), intro_attr, changelog_attr, format_time(mtime))
+            "      </a>".format(href, mtime, preview, read_version(str(e["file"])), e["name"], intro_attr, changelog_attr, format_time(mtime))
         )
 
     page = """<!DOCTYPE html>
@@ -274,11 +276,11 @@ def write_gallery(entries):
           transition: transform .15s, border-color .15s;
           -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   .card:hover { transform: translateY(-4px); border-color: #3fb950; }
-  .meta { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 18px 14px; }
+  .meta { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 18px 14px; }
   .time-bottom { align-self: flex-end; margin-top: 4px; color: #6e7681; font-size: 10px; }
-  .name { font-size: 15px; font-weight: 600; text-align: center; overflow: hidden;
-          text-overflow: ellipsis; white-space: nowrap; }
-  .info-row { display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .title-row { display: flex; align-items: center; justify-content: center; gap: 6px; max-width: 100%; }
+  .title-row .name { flex: 0 1 auto; min-width: 0; font-size: 15px; font-weight: 600; overflow: hidden;
+                     text-overflow: ellipsis; white-space: nowrap; }
   .ver { display: inline-block; padding: 1px 9px; border-radius: 10px;
          background: rgba(63,185,80,.12); border: 1px solid rgba(63,185,80,.3);
          color: #3fb950; font-size: 11px; font-weight: 600; }
@@ -289,6 +291,11 @@ def write_gallery(entries):
               -webkit-tap-highlight-color: transparent; }
   .icon-btn:hover { background: rgba(255,255,255,.12); color: #fff; }
   .icon-btn:active { transform: scale(.9); }
+  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.85); display: none;
+              align-items: center; justify-content: center; z-index: 110; padding: 24px; }
+  .lightbox.open { display: flex; }
+  .lightbox-img { width: 100%; height: 100%; background-size: contain; background-repeat: no-repeat;
+                  background-position: center; }
   .modal { position: fixed; inset: 0; background: rgba(0,0,0,.72); display: none;
            align-items: center; justify-content: center; z-index: 120; padding: 24px; }
   .modal.open { display: flex; }
