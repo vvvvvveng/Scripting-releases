@@ -47,11 +47,14 @@
   .note { max-width: 1080px; margin: -12px auto 16px; padding: 0 20px;
           color: #8b949e; font-size: 12px; text-align: center; }
   .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.88); display: none;
-              align-items: center; justify-content: center; z-index: 99; }
+              align-items: center; justify-content: center; z-index: 99;
+              -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
+              touch-action: none; }
   .lightbox.open { display: flex; }
-  .lightbox img { max-width: 92%; max-height: 92%; object-fit: contain;
-                  border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,.6);
-                  -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+  .lightbox-img { width: 92%; height: 92%; border-radius: 8px;
+                  background-repeat: no-repeat; background-position: center;
+                  background-size: contain; box-shadow: 0 10px 40px rgba(0,0,0,.6);
+                  pointer-events: none; }
   footer { text-align: center; color: #484f58; font-size: 12px; padding-bottom: 40px; }
 </style>
 </head>
@@ -110,7 +113,7 @@
         </div>
       </a>
 </div>
-<div class="lightbox" id="lightbox"><img id="lightboxImg" alt="预览"></div>
+<div class="lightbox" id="lightbox"><div class="lightbox-img" id="lightboxImg"></div></div>
 <footer>© WWWeng🐝 · vvvvvveng/Scripting-releases</footer>
 <script>
   const gallery = document.getElementById('gallery');
@@ -139,7 +142,7 @@
     ordered.forEach(function (card) { gallery.appendChild(card); });
   });
 
-  // 长按卡片 → 全屏预览图片，松手退出
+  // 长按卡片 → 全屏预览（背景图，无选中/放大行为），松手退出
   const lightbox = document.getElementById('lightbox');
   const lightboxImg = document.getElementById('lightboxImg');
   let pressTimer = null;
@@ -147,7 +150,7 @@
 
   function closeLightbox() {
     lightbox.classList.remove('open');
-    lightboxImg.src = '';
+    lightboxImg.style.backgroundImage = '';
     previewed = false;
   }
   lightbox.addEventListener('click', closeLightbox);
@@ -165,7 +168,7 @@
       clearPress();
       pressTimer = setTimeout(function () {
         previewed = true;
-        lightboxImg.src = imgSrc;
+        lightboxImg.style.backgroundImage = "url('" + imgSrc + "')";
         lightbox.classList.add('open');
       }, 450);
     }
