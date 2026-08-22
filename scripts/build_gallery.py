@@ -8,6 +8,7 @@
 由 .github/workflows/generate.yml 每次 push 后自动执行。
 """
 import re
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import quote
@@ -18,6 +19,16 @@ SCRIPT_EXT = ".scripting"
 IMAGE_DIR = Path("项目展示图")
 # 文件名包含这些关键词的脚本不展示
 SKIP_KEYWORDS = ["请勿下载"]
+
+
+def import_url(file_name: str) -> str:
+    """构造 Scripting 一键导入链接（带毫秒时间戳防缓存）。"""
+    raw = (
+        f"https://raw.githubusercontent.com/{REPO}/{BRANCH}/{file_name}"
+        f"?t={int(time.time() * 1000)}"
+    )
+    payload = quote(f'["{raw}"]', safe="")
+    return f"https://scripting.fun/import_scripts?urls={payload}"
 
 
 def human_size(n: int) -> str:
@@ -80,7 +91,9 @@ def update_readme(entries):
             else "--"
         )
         file_rel = quote(str(e["file"]), safe="/")
-        rows.append(f"| {img_md} | **{e['name']}** | {e['size']} | [下载]({file_rel}) |")
+        rows.append(
+            f"| {img_md} | **{e['name']}** | {e['size']} | [一键导入]({import_url(str(e['file']))}) |"
+        )
 
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     block = (
@@ -100,7 +113,7 @@ def update_readme(entries):
 def write_gallery(entries):
     # 图片用相对路径（gallery.html 与 项目展示图/ 同处仓库根目录），
     # 这样在 GitHub Pages 上图片走 github.io 域名加载，国内访问更稳定。
-    blob_base = f"https://github.com/{REPO}/blob/{BRANCH}/"
+    # 卡片点击跳转 Scripting 一键导入页。
 
     cards = []
     for e in entries:
@@ -108,7 +121,7 @@ def write_gallery(entries):
             thumb = f'<img src="{quote(str(e["img"]), safe="/")}" alt="{e["name"]}" loading="lazy">'
         else:
             thumb = '<div class="noimg">🖥️</div>'
-        href = blob_base + quote(str(e["file"]), safe="/")
+        href = import_url(str(e["file"]))
         cards.append(
             '\n      <a class="card" href="{}" target="_blank">\n'
             '        <div class="thumb">{}</div>\n'
