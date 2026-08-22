@@ -194,7 +194,6 @@ def write_gallery(entries):
             '            <div class="ver">v{}</div>\n'
             '            <div class="time">🕒 {}</div>\n'
             '          </div>\n'
-            '          <div class="hint">长按预览</div>\n'
             "        </div>\n"
             "      </a>".format(href, mtime, preview, e["name"], read_version(str(e["file"])), format_time(mtime))
         )
@@ -245,12 +244,14 @@ def write_gallery(entries):
          background: rgba(63,185,80,.12); border: 1px solid rgba(63,185,80,.3);
          color: #3fb950; font-size: 11px; font-weight: 600; }
   .time { color: #8b949e; font-size: 12px; }
-  .hint { color: #8b949e; font-size: 11px; opacity: .8; }
+  .note { max-width: 1080px; margin: -12px auto 16px; padding: 0 20px;
+          color: #8b949e; font-size: 12px; text-align: center; }
   .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.88); display: none;
               align-items: center; justify-content: center; z-index: 99; }
   .lightbox.open { display: flex; }
   .lightbox img { max-width: 92%; max-height: 92%; object-fit: contain;
-                  border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,.6); }
+                  border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,.6);
+                  -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   footer { text-align: center; color: #484f58; font-size: 12px; padding-bottom: 40px; }
 </style>
 </head>
@@ -276,6 +277,7 @@ def write_gallery(entries):
     <option value="recent">最新修改</option>
   </select>
 </div>
+<div class="note">💡 长按卡片可预览脚本截图</div>
 <div class="gallery" id="gallery">__CARDS__
 </div>
 <div class="lightbox" id="lightbox"><img id="lightboxImg" alt="预览"></div>
@@ -307,7 +309,7 @@ def write_gallery(entries):
     ordered.forEach(function (card) { gallery.appendChild(card); });
   });
 
-  // 长按卡片 → 全屏预览图片
+  // 长按卡片 → 全屏预览图片，松手退出
   const lightbox = document.getElementById('lightbox');
   const lightboxImg = document.getElementById('lightboxImg');
   let pressTimer = null;
@@ -316,6 +318,7 @@ def write_gallery(entries):
   function closeLightbox() {
     lightbox.classList.remove('open');
     lightboxImg.src = '';
+    previewed = false;
   }
   lightbox.addEventListener('click', closeLightbox);
 
@@ -326,6 +329,7 @@ def write_gallery(entries):
 
     function clearPress() {
       if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+      if (previewed) { closeLightbox(); }
     }
     function startPress() {
       clearPress();
