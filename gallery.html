@@ -44,12 +44,14 @@
          background: rgba(63,185,80,.12); border: 1px solid rgba(63,185,80,.3);
          color: #3fb950; font-size: 11px; font-weight: 600; }
   .time { color: #8b949e; font-size: 12px; }
-  .hint { color: #8b949e; font-size: 11px; opacity: .8; }
+  .note { max-width: 1080px; margin: -12px auto 16px; padding: 0 20px;
+          color: #8b949e; font-size: 12px; text-align: center; }
   .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.88); display: none;
               align-items: center; justify-content: center; z-index: 99; }
   .lightbox.open { display: flex; }
   .lightbox img { max-width: 92%; max-height: 92%; object-fit: contain;
-                  border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,.6); }
+                  border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,.6);
+                  -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   footer { text-align: center; color: #484f58; font-size: 12px; padding-bottom: 40px; }
 </style>
 </head>
@@ -75,6 +77,7 @@
     <option value="recent">最新修改</option>
   </select>
 </div>
+<div class="note">💡 长按卡片可预览脚本截图</div>
 <div class="gallery" id="gallery">
       <a class="card" href="https://scripting.fun/import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2F%E8%84%9A%E6%9C%AC%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7.scripting%22%5D" data-mtime="1787285612" target="_blank">
         <img class="preview-src" src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/%E8%84%9A%E6%9C%AC%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7.png" alt="" style="display:none">
@@ -84,7 +87,6 @@
             <div class="ver">v5.0.70</div>
             <div class="time">🕒 2026-08-21 12:13</div>
           </div>
-          <div class="hint">长按预览</div>
         </div>
       </a>
       <a class="card" href="https://scripting.fun/import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2FDeepSeek%E7%94%A8%E9%87%8F%E4%BD%99%E9%A2%9D%E6%9F%A5%E8%AF%A2.scripting%22%5D" data-mtime="1786928499" target="_blank">
@@ -95,7 +97,6 @@
             <div class="ver">v1.8.1</div>
             <div class="time">🕒 2026-08-17 09:01</div>
           </div>
-          <div class="hint">长按预览</div>
         </div>
       </a>
       <a class="card" href="https://scripting.fun/import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2F%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7.scripting%22%5D" data-mtime="1786669142" target="_blank">
@@ -106,7 +107,6 @@
             <div class="ver">v1.0.2</div>
             <div class="time">🕒 2026-08-14 08:59</div>
           </div>
-          <div class="hint">长按预览</div>
         </div>
       </a>
 </div>
@@ -139,7 +139,7 @@
     ordered.forEach(function (card) { gallery.appendChild(card); });
   });
 
-  // 长按卡片 → 全屏预览图片
+  // 长按卡片 → 全屏预览图片，松手退出
   const lightbox = document.getElementById('lightbox');
   const lightboxImg = document.getElementById('lightboxImg');
   let pressTimer = null;
@@ -148,6 +148,7 @@
   function closeLightbox() {
     lightbox.classList.remove('open');
     lightboxImg.src = '';
+    previewed = false;
   }
   lightbox.addEventListener('click', closeLightbox);
 
@@ -158,6 +159,7 @@
 
     function clearPress() {
       if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+      if (previewed) { closeLightbox(); }
     }
     function startPress() {
       clearPress();
