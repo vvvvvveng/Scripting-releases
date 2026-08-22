@@ -120,7 +120,7 @@ def update_readme(entries):
         img_md = (
             f"![{e['name']}]({quote(str(e['img']), safe='/')})"
             if e["img"]
-            else "--"
+            else "—"
         )
         file_rel = quote(str(e["file"]), safe="/")
         rows.append(
@@ -188,7 +188,7 @@ def write_gallery(entries):
   .toolbar { max-width: 1080px; margin: 0 auto 20px; padding: 0 20px;
              display: flex; justify-content: space-between; align-items: center; gap: 12px; }
   .search { width: 320px; padding: 8px 14px; background: #161b22; color: #e6edf3;
-            border: 1px solid #30363d; border-radius: 8px; font-size: 13px; outline: none;
+            border: 1px solid #30363d; border-radius: 8px; font-size: 16px; outline: none;
             transition: border-color .15s, box-shadow .15s; }
   .search:focus { border-color: #3fb950; box-shadow: 0 0 0 3px rgba(63,185,80,.15); }
   .search::placeholder { color: #8b949e; }
