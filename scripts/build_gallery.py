@@ -174,27 +174,29 @@ def update_readme(entries):
 def write_gallery(entries):
     # 图片用相对路径（gallery.html 与 项目展示图/ 同处仓库根目录），
     # 这样在 GitHub Pages 上图片走 github.io 域名加载，国内访问更稳定。
-    # 卡片点击跳转 Scripting 一键导入页。
+    # 卡片点击跳转 Scripting 一键导入页，长按卡片可预览展示图。
 
     cards = []
     for e in entries:
-        if e["img"]:
-            thumb = f'<img src="{quote(str(e["img"]), safe="/")}" alt="{e["name"]}" loading="lazy">'
-        else:
-            thumb = '<div class="noimg">🖥️</div>'
         href = import_url(str(e["file"]))
         mtime = last_commit_time(str(e["file"]))
+        preview = ""
+        if e["img"]:
+            preview = (
+                '<img class="preview-src" src="{}" alt="" style="display:none">'
+            ).format(quote(str(e["img"]), safe="/"))
         cards.append(
             '\n      <a class="card" href="{}" data-mtime="{}" target="_blank">\n'
-            '        <div class="thumb">{}</div>\n'
+            '        {}\n'
             '        <div class="meta">\n'
             '          <div class="name">{}</div>\n'
             '          <div class="info-row">\n'
             '            <div class="ver">v{}</div>\n'
             '            <div class="time">🕒 {}</div>\n'
             '          </div>\n'
+            '          <div class="hint">长按预览</div>\n'
             "        </div>\n"
-            "      </a>".format(href, mtime, thumb, e["name"], read_version(str(e["file"])), format_time(mtime))
+            "      </a>".format(href, mtime, preview, e["name"], read_version(str(e["file"])), format_time(mtime))
         )
 
     html = """<!DOCTYPE html>
@@ -232,12 +234,10 @@ def write_gallery(entries):
              display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
   .card { display: block; background: #161b22; border: 1px solid #30363d;
           border-radius: 12px; overflow: hidden; text-decoration: none; color: inherit;
-          transition: transform .15s, border-color .15s; }
+          transition: transform .15s, border-color .15s;
+          -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   .card:hover { transform: translateY(-4px); border-color: #3fb950; }
-  .thumb { height: 340px; background: #0d1117; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-  .thumb img { width: 100%; height: 100%; object-fit: contain; }
-  .noimg { font-size: 48px; opacity: .4; }
-  .meta { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 14px; }
+  .meta { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 18px 14px; }
   .name { font-size: 15px; font-weight: 600; text-align: center; overflow: hidden;
           text-overflow: ellipsis; white-space: nowrap; }
   .info-row { display: flex; align-items: center; justify-content: center; gap: 6px; }
@@ -245,6 +245,12 @@ def write_gallery(entries):
          background: rgba(63,185,80,.12); border: 1px solid rgba(63,185,80,.3);
          color: #3fb950; font-size: 11px; font-weight: 600; }
   .time { color: #8b949e; font-size: 12px; }
+  .hint { color: #8b949e; font-size: 11px; opacity: .8; }
+  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.88); display: none;
+              align-items: center; justify-content: center; z-index: 99; }
+  .lightbox.open { display: flex; }
+  .lightbox img { max-width: 92%; max-height: 92%; object-fit: contain;
+                  border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,.6); }
   footer { text-align: center; color: #484f58; font-size: 12px; padding-bottom: 40px; }
 </style>
 </head>
@@ -272,6 +278,7 @@ def write_gallery(entries):
 </div>
 <div class="gallery" id="gallery">__CARDS__
 </div>
+<div class="lightbox" id="lightbox"><img id="lightboxImg" alt="预览"></div>
 <footer>© WWWeng🐝 · vvvvvveng/Scripting-releases</footer>
 <script>
   const gallery = document.getElementById('gallery');
@@ -298,6 +305,47 @@ def write_gallery(entries):
       ordered = originalOrder.slice();
     }
     ordered.forEach(function (card) { gallery.appendChild(card); });
+  });
+
+  // 长按卡片 → 全屏预览图片
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  let pressTimer = null;
+  let previewed = false;
+
+  function closeLightbox() {
+    lightbox.classList.remove('open');
+    lightboxImg.src = '';
+  }
+  lightbox.addEventListener('click', closeLightbox);
+
+  cards.forEach(function (card) {
+    const srcEl = card.querySelector('.preview-src');
+    if (!srcEl) return;
+    const imgSrc = srcEl.getAttribute('src');
+
+    function clearPress() {
+      if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+    }
+    function startPress() {
+      clearPress();
+      pressTimer = setTimeout(function () {
+        previewed = true;
+        lightboxImg.src = imgSrc;
+        lightbox.classList.add('open');
+      }, 450);
+    }
+
+    card.addEventListener('touchstart', startPress, { passive: true });
+    card.addEventListener('touchend', clearPress);
+    card.addEventListener('touchmove', clearPress);
+    card.addEventListener('touchcancel', clearPress);
+    card.addEventListener('mousedown', startPress);
+    card.addEventListener('mouseup', clearPress);
+    card.addEventListener('mouseleave', clearPress);
+    card.addEventListener('click', function (e) {
+      if (previewed) { e.preventDefault(); e.stopPropagation(); previewed = false; }
+    });
   });
 </script>
 </body>
