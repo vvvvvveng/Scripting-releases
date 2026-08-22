@@ -8,7 +8,6 @@
 由 .github/workflows/generate.yml 每次 push 后自动执行。
 """
 import re
-import time
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import quote
@@ -22,11 +21,8 @@ SKIP_KEYWORDS = ["请勿下载"]
 
 
 def import_url(file_name: str) -> str:
-    """构造 Scripting 一键导入链接（带毫秒时间戳防缓存）。"""
-    raw = (
-        f"https://raw.githubusercontent.com/{REPO}/{BRANCH}/{file_name}"
-        f"?t={int(time.time() * 1000)}"
-    )
+    """构造 Scripting 一键导入链接。"""
+    raw = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}/{file_name}"
     payload = quote(f'["{raw}"]', safe="")
     return f"https://scripting.fun/import_scripts?urls={payload}"
 
@@ -88,7 +84,7 @@ def update_readme(entries):
         img_md = (
             f"![{e['name']}]({quote(str(e['img']), safe='/')})"
             if e["img"]
-            else "--"
+            else "—"
         )
         file_rel = quote(str(e["file"]), safe="/")
         rows.append(
@@ -154,8 +150,8 @@ def write_gallery(entries):
           border-radius: 12px; overflow: hidden; text-decoration: none; color: inherit;
           transition: transform .15s, border-color .15s; }
   .card:hover { transform: translateY(-4px); border-color: #3fb950; }
-★ .thumb { height: 340px; background: #0d1117; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-★ .thumb img { width: 100%; height: 100%; object-fit: contain; }
+  .thumb { height: 340px; background: #0d1117; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .thumb img { width: 100%; height: 100%; object-fit: contain; }
   .noimg { font-size: 48px; opacity: .4; }
   .meta { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; }
   .name { font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
