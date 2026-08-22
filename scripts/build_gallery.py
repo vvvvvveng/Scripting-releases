@@ -377,8 +377,8 @@ def write_gallery(entries):
     });
     card.addEventListener('pointermove', movePress);
     card.addEventListener('pointerup', endPress);
-    // pointercancel 只取消计时，不关闭已打开的预览
-    card.addEventListener('pointercancel', cancelPress);
+    // 长按手势结束时系统可能发 pointercancel 而非 pointerup，同样关闭预览
+    card.addEventListener('pointercancel', endPress);
     // 长按预览过 → 拦截 iOS 松手后补发的 click，避免误触导入
     card.addEventListener('click', function (e) {
       if (previewed || suppressClick) {
@@ -386,6 +386,15 @@ def write_gallery(entries):
         previewed = false; suppressClick = false;
       }
     });
+  });
+
+  // 兜底：个别情况下松手的 pointerup 没派发到卡片（capture 失效等），
+  // 全局松手时同样关闭预览，避免预览残留
+  document.addEventListener('pointerup', function () {
+    if (previewed) {
+      closeLightbox();
+      suppressClick = true;
+    }
   });
 </script>
 </body>
