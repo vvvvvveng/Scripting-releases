@@ -11,14 +11,25 @@
   header { padding: 40px 20px 24px; text-align: center; }
   header h1 { margin: 0 0 8px; font-size: 28px; }
   header p { margin: 0; color: #8b949e; font-size: 14px; }
-  .count { display: inline-block; margin-top: 12px; padding: 4px 14px;
-           background: rgba(35,134,54,.13); color: #3fb950; border: 1px solid rgba(35,134,54,.33);
-           border-radius: 20px; font-size: 13px; }
-  .star-btn { display: inline-block; margin: 18px 0 6px; padding: 9px 26px;
-              background: #238636; color: #fff; border-radius: 8px;
-              font-size: 14px; font-weight: 600; text-decoration: none;
-              transition: background .15s, transform .15s; }
-  .star-btn:hover { background: #2ea043; transform: translateY(-1px); }
+  .btn-group { display: flex; justify-content: center; gap: 12px; margin: 18px 0 6px; }
+  .btn { display: inline-block; padding: 9px 26px; color: #fff; border-radius: 8px;
+         font-size: 14px; font-weight: 600; text-decoration: none;
+         transition: background .15s, transform .15s; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-channel { background: #1a8cd8; }
+  .btn-channel:hover { background: #1f9cf0; }
+  .btn-repo { background: #30363d; border: 1px solid #8b949e; }
+  .btn-repo:hover { background: #3d444d; }
+  .toolbar { display: flex; justify-content: center; align-items: center;
+             gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+  .search { width: 300px; max-width: 85%; padding: 10px 16px;
+            background: #161b22; color: #e6edf3; border: 1px solid #30363d;
+            border-radius: 8px; font-size: 14px; outline: none; }
+  .search:focus { border-color: #3fb950; }
+  .search::placeholder { color: #8b949e; }
+  .sort { padding: 10px 14px; background: #161b22; color: #e6edf3;
+          border: 1px solid #30363d; border-radius: 8px; font-size: 14px; outline: none; }
+  .sort:focus { border-color: #3fb950; }
   .gallery { max-width: 1080px; margin: 0 auto; padding: 8px 20px 60px;
              display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
   .card { display: block; background: #161b22; border: 1px solid #30363d;
@@ -37,34 +48,69 @@
 <body>
 <header>
   <h1>🛠 Scripting 作品合集</h1>
-  <p>由 GitHub Actions 自动生成 · 每次推送脚本后自动更新</p>
-  <a class="star-btn" href="https://github.com/vvvvvveng/Scripting-releases" target="_blank">⭐ Star 仓库</a>
-  <br>
-  <span class="count">共 3 件作品</span>
+  <p>由 WWWeng🐝 维护 · 共 3 件作品 · 每次推送脚本后自动更新</p>
+  <div class="btn-group">
+    <a class="btn btn-channel" href="https://t.me/wwwengshare" target="_blank">📢 频道</a>
+    <a class="btn btn-repo" href="https://github.com/vvvvvveng/Scripting-releases" target="_blank">📦 仓库</a>
+  </div>
+  <div class="toolbar">
+    <input id="search" class="search" type="search" placeholder="🔍 搜索脚本…">
+    <select id="sort" class="sort">
+      <option value="default">默认排序</option>
+      <option value="recent">最新修改</option>
+    </select>
+  </div>
 </header>
-<div class="gallery">
-      <a class="card" href="https://scripting.fun/import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2FDeepSeek%E7%94%A8%E9%87%8F%E4%BD%99%E9%A2%9D%E6%9F%A5%E8%AF%A2.scripting%22%5D" target="_blank">
-        <div class="thumb"><img src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/DeepSeek%E7%94%A8%E9%87%8F%E4%BD%99%E9%A2%9D%E6%9F%A5%E8%AF%A2.png" alt="DeepSeek用量余额查询" loading="lazy"></div>
-        <div class="meta">
-          <div class="name">DeepSeek用量余额查询</div>
-          <div class="size">104.3 KB</div>
-        </div>
-      </a>
-      <a class="card" href="https://scripting.fun/import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2F%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7.scripting%22%5D" target="_blank">
-        <div class="thumb"><img src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7.png" alt="正则表达式测试工具" loading="lazy"></div>
-        <div class="meta">
-          <div class="name">正则表达式测试工具</div>
-          <div class="size">80.4 KB</div>
-        </div>
-      </a>
-      <a class="card" href="https://scripting.fun/import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2F%E8%84%9A%E6%9C%AC%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7.scripting%22%5D" target="_blank">
+<div class="gallery" id="gallery">
+      <a class="card" href="https://scripting.fun/import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2F%E8%84%9A%E6%9C%AC%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7.scripting%22%5D" data-mtime="1787372278" target="_blank">
         <div class="thumb"><img src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/%E8%84%9A%E6%9C%AC%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7.png" alt="脚本管理工具" loading="lazy"></div>
         <div class="meta">
           <div class="name">脚本管理工具</div>
           <div class="size">584.3 KB</div>
         </div>
       </a>
+      <a class="card" href="https://scripting.fun/import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2FDeepSeek%E7%94%A8%E9%87%8F%E4%BD%99%E9%A2%9D%E6%9F%A5%E8%AF%A2.scripting%22%5D" data-mtime="1787372278" target="_blank">
+        <div class="thumb"><img src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/DeepSeek%E7%94%A8%E9%87%8F%E4%BD%99%E9%A2%9D%E6%9F%A5%E8%AF%A2.png" alt="DeepSeek用量余额查询" loading="lazy"></div>
+        <div class="meta">
+          <div class="name">DeepSeek用量余额查询</div>
+          <div class="size">104.3 KB</div>
+        </div>
+      </a>
+      <a class="card" href="https://scripting.fun/import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2F%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7.scripting%22%5D" data-mtime="1787372278" target="_blank">
+        <div class="thumb"><img src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7.png" alt="正则表达式测试工具" loading="lazy"></div>
+        <div class="meta">
+          <div class="name">正则表达式测试工具</div>
+          <div class="size">80.4 KB</div>
+        </div>
+      </a>
 </div>
-<footer>Generated by GitHub Actions · vvvvvveng/Scripting-releases</footer>
+<footer>© WWWeng🐝 · Generated by GitHub Actions · vvvvvveng/Scripting-releases</footer>
+<script>
+  const gallery = document.getElementById('gallery');
+  const input = document.getElementById('search');
+  const sortSel = document.getElementById('sort');
+  const cards = Array.prototype.slice.call(gallery.querySelectorAll('.card'));
+  const originalOrder = cards.slice();
+
+  input.addEventListener('input', function () {
+    const q = input.value.trim().toLowerCase();
+    cards.forEach(function (card) {
+      const name = card.querySelector('.name').textContent.toLowerCase();
+      card.style.display = name.indexOf(q) !== -1 ? '' : 'none';
+    });
+  });
+
+  sortSel.addEventListener('change', function () {
+    let ordered;
+    if (sortSel.value === 'recent') {
+      ordered = cards.slice().sort(function (a, b) {
+        return (parseInt(b.dataset.mtime, 10) || 0) - (parseInt(a.dataset.mtime, 10) || 0);
+      });
+    } else {
+      ordered = originalOrder.slice();
+    }
+    ordered.forEach(function (card) { gallery.appendChild(card); });
+  });
+</script>
 </body>
 </html>
