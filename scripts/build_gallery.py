@@ -7,6 +7,7 @@
 
 由 .github/workflows/generate.yml 每次 push 后自动执行。
 """
+import html
 import json
 import re
 import subprocess
@@ -84,6 +85,33 @@ def read_version(file_name: str) -> str:
     except Exception:
         pass
     return ""
+
+
+def read_meta(file_name: str):
+    """读取 .scripting 包内 script.json 的介绍与最近更新说明。
+
+    介绍用 script.json 的 description（或 localizedDescriptions.zh）；
+    最近更新说明用自定义字段 changelog（用户手动填写），取不到返回空串。
+    """
+    try:
+        import zipfile
+
+        with zipfile.ZipFile(file_name) as z:
+            for name in z.namelist():
+                if name.endswith("script.json"):
+                    try:
+                        data = json.loads(z.read(name))
+                    except Exception:
+                        continue
+                    desc = data.get("description") or ""
+                    ld = data.get("localizedDescriptions") or {}
+                    if not desc:
+                        desc = ld.get("zh") or ld.get("zh-Hans") or ""
+                    changelog = data.get("changelog") or data.get("releaseNotes") or ""
+                    return {"desc": str(desc), "changelog": str(changelog)}
+    except Exception:
+        pass
+    return {"desc": "", "changelog": ""}
 
 
 def human_size(n: int) -> str:
@@ -177,6 +205,8 @@ def write_gallery(entries):
     # 卡片点击跳转 Scripting 一键导入页，长按卡片预览展示图。
     # 预览用 CSS 背景图而非 <img>：背景图不是"图片"，长按时不会触发
     # iOS 的选中/放大镜/图片菜单，预览图永远清晰原样显示。
+    # 更新时间固定在卡片右上角；版本号后两个图标分别弹窗显示
+    # 软件介绍（script.json 的 description）与最近更新说明（changelog）。
 
     cards = []
     for e in entries:
@@ -187,20 +217,25 @@ def write_gallery(entries):
             preview = (
                 '<img class="preview-src" src="{}" alt="" style="display:none">'
             ).format(quote(str(e["img"]), safe="/"))
+        meta = read_meta(str(e["file"]))
+        intro_attr = html.escape(meta["desc"] or "暂无介绍", quote=True)
+        changelog_attr = html.escape(meta["changelog"] or "暂无更新说明", quote=True)
         cards.append(
             '\n      <a class="card" href="{}" data-mtime="{}" target="_blank">\n'
             '        {}\n'
             '        <div class="meta">\n'
+            '          <div class="time-top">🕒 {}</div>\n'
             '          <div class="name">{}</div>\n'
             '          <div class="info-row">\n'
             '            <div class="ver">v{}</div>\n'
-            '            <div class="time">🕒 {}</div>\n'
+            '            <button class="icon-btn" type="button" title="软件介绍" data-content="{}">ℹ️</button>\n'
+            '            <button class="icon-btn" type="button" title="最近更新说明" data-content="{}">📝</button>\n'
             '          </div>\n'
             "        </div>\n"
-            "      </a>".format(href, mtime, preview, e["name"], read_version(str(e["file"])), format_time(mtime))
+            "      </a>".format(href, mtime, preview, format_time(mtime), e["name"], read_version(str(e["file"])), intro_attr, changelog_attr)
         )
 
-    html = """<!DOCTYPE html>
+    page = """<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -238,25 +273,36 @@ def write_gallery(entries):
           transition: transform .15s, border-color .15s;
           -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   .card:hover { transform: translateY(-4px); border-color: #3fb950; }
-  .meta { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 18px 14px; }
+  .meta { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 18px 14px; }
+  .time-top { position: absolute; top: 6px; right: 10px; color: #6e7681; font-size: 10px; }
   .name { font-size: 15px; font-weight: 600; text-align: center; overflow: hidden;
           text-overflow: ellipsis; white-space: nowrap; }
   .info-row { display: flex; align-items: center; justify-content: center; gap: 6px; }
   .ver { display: inline-block; padding: 1px 9px; border-radius: 10px;
          background: rgba(63,185,80,.12); border: 1px solid rgba(63,185,80,.3);
          color: #3fb950; font-size: 11px; font-weight: 600; }
-  .time { color: #8b949e; font-size: 12px; }
-  .note { max-width: 1080px; margin: -12px auto 16px; padding: 0 20px;
-          color: #8b949e; font-size: 12px; text-align: center; }
-  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.88); display: none;
-              align-items: center; justify-content: center; z-index: 99;
-              -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
-              touch-action: none; }
-  .lightbox.open { display: flex; }
-  .lightbox-img { width: 92%; height: 92%; border-radius: 8px;
-                  background-repeat: no-repeat; background-position: center;
-                  background-size: contain; box-shadow: 0 10px 40px rgba(0,0,0,.6);
-                  pointer-events: none; }
+  .icon-btn { display: inline-flex; align-items: center; justify-content: center;
+              width: 22px; height: 22px; padding: 0; border: none; background: transparent;
+              font-size: 13px; line-height: 1; cursor: pointer; border-radius: 6px;
+              color: #c9d1d9; transition: background .15s, transform .1s;
+              -webkit-tap-highlight-color: transparent; }
+  .icon-btn:hover { background: rgba(255,255,255,.12); color: #fff; }
+  .icon-btn:active { transform: scale(.9); }
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.72); display: none;
+           align-items: center; justify-content: center; z-index: 120; padding: 24px; }
+  .modal.open { display: flex; }
+  .modal-box { width: 100%; max-width: 520px; max-height: 78%;
+               background: #161b22; border: 1px solid #30363d; border-radius: 14px;
+               padding: 18px 20px; display: flex; flex-direction: column; gap: 12px;
+               box-shadow: 0 10px 40px rgba(0,0,0,.6); }
+  .modal-title { font-size: 16px; font-weight: 700; display: flex; justify-content: space-between;
+                 align-items: center; gap: 10px; }
+  .modal-body { color: #c9d1d9; font-size: 14px; line-height: 1.65; overflow-y: auto;
+                white-space: pre-wrap; word-break: break-word; }
+  .modal-close { align-self: flex-end; padding: 6px 16px; border: none; border-radius: 8px;
+                 background: rgba(255,255,255,.1); color: #e6edf3; font-size: 13px;
+                 cursor: pointer; transition: background .15s; }
+  .modal-close:hover { background: rgba(255,255,255,.2); }
   footer { text-align: center; color: #484f58; font-size: 12px; padding-bottom: 40px; }
 </style>
 </head>
@@ -286,6 +332,13 @@ def write_gallery(entries):
 <div class="gallery" id="gallery">__CARDS__
 </div>
 <div class="lightbox" id="lightbox"><div class="lightbox-img" id="lightboxImg"></div></div>
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div class="modal-title"><span id="modalTitle"></span><button class="icon-btn" id="modalX" title="关闭">✕</button></div>
+    <div class="modal-body" id="modalBody"></div>
+    <button class="modal-close" id="modalClose">关闭</button>
+  </div>
+</div>
 <footer>© WWWeng🐝 · vvvvvveng/Scripting-releases</footer>
 <script>
   const gallery = document.getElementById('gallery');
@@ -312,6 +365,33 @@ def write_gallery(entries):
       ordered = originalOrder.slice();
     }
     ordered.forEach(function (card) { gallery.appendChild(card); });
+  });
+
+  // 信息弹窗：软件介绍 / 最近更新说明
+  const modal = document.getElementById('modal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalBody = document.getElementById('modalBody');
+  function openModal(title, text) {
+    modalTitle.textContent = title;
+    modalBody.textContent = text;
+    modal.classList.add('open');
+  }
+  function closeModal() { modal.classList.remove('open'); }
+  modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('modalX').addEventListener('click', closeModal);
+
+  cards.forEach(function (card) {
+    const introBtn = card.querySelector('.icon-btn');
+    const logBtn = introBtn ? introBtn.nextElementSibling : null;
+    if (introBtn) introBtn.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      openModal('软件介绍', introBtn.dataset.content);
+    });
+    if (logBtn) logBtn.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      openModal('最近更新说明', logBtn.dataset.content);
+    });
   });
 
   // 长按脚本名 → 全屏预览图片（背景图，无选中/放大行为），松手退出
@@ -400,11 +480,11 @@ def write_gallery(entries):
 </body>
 </html>
 """
-    html = html.replace("__COUNT__", str(len(entries))).replace(
+    page = page.replace("__COUNT__", str(len(entries))).replace(
         "__CARDS__", "".join(cards)
     )
 
-    Path("gallery.html").write_text(html, encoding="utf-8")
+    Path("gallery.html").write_text(page, encoding="utf-8")
     print("✅ gallery.html 已生成")
 
 
