@@ -191,7 +191,7 @@
     function movePress(e) {
       const p = e.touches ? e.touches[0] : e;
       if (!p) return;
-      if (Math.abs(p.clientX - startX) > 12 || Math.abs(p.clientY - startY) > 12) {
+      if (Math.abs(p.clientX - startX) > 30 || Math.abs(p.clientY - startY) > 30) {
         if (previewed) { closeLightbox(); suppressClick = true; }
         cancelPress();
       }
