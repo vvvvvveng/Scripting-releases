@@ -154,8 +154,8 @@ def write_gallery(entries):
           border-radius: 12px; overflow: hidden; text-decoration: none; color: inherit;
           transition: transform .15s, border-color .15s; }
   .card:hover { transform: translateY(-4px); border-color: #3fb950; }
-  .thumb { height: 170px; background: #0d1117; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-  .thumb img { width: 100%; height: 100%; object-fit: cover; }
+★ .thumb { height: 340px; background: #0d1117; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+★ .thumb img { width: 100%; height: 100%; object-fit: contain; }
   .noimg { font-size: 48px; opacity: .4; }
   .meta { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; }
   .name { font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
