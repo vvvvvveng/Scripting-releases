@@ -205,7 +205,7 @@ def write_gallery(entries):
     # 卡片点击跳转 Scripting 一键导入页，长按卡片预览展示图。
     # 预览用 CSS 背景图而非 <img>：背景图不是"图片"，长按时不会触发
     # iOS 的选中/放大镜/图片菜单，预览图永远清晰原样显示。
-    # 更新时间与版本号固定在卡片右下角。
+    # 更新时间与版本号固定在卡片下方（版本号绿色框、左下角）。
     # 长按卡片预览展示图（长按设定与 2026-08-22 15:27 提交 8ce8e20000 一致：
     # Pointer Events + setPointerCapture，lightbox 用 touch-action:none /
     # user-select:none / pointer-events:none 保证真机长按稳定）。
@@ -268,8 +268,8 @@ def write_gallery(entries):
           transition: transform .15s, border-color .15s;
           -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   .card:hover { transform: translateY(-4px); border-color: #3fb950; }
-  .meta { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 24px 14px 18px; }
-  .time-bottom { align-self: flex-end; margin-top: 4px; color: #6e7681; font-size: 10px;
+  .meta { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 30px 14px 18px; }
+  .time-bottom { align-self: flex-start; margin-top: 4px; color: #6e7681; font-size: 10px;
                  display: flex; align-items: center; gap: 5px; }
   .name { font-size: 15px; font-weight: 600; text-align: center; overflow: hidden;
           text-overflow: ellipsis; white-space: nowrap; }
