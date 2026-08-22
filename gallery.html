@@ -1,4 +1,203 @@
-<!DOCTYPE html>
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+自动扫描仓库中的 .scripting 脚本，生成作品合集：
+  1. README.md  末尾追加作品表格（幂等，重复运行只替换列表部分）
+  2. gallery.html  独立画廊页面（适配 GitHub Pages，含搜索框）
+
+由 .github/workflows/generate.yml 每次 push 后自动执行。
+"""
+import json
+import re
+import subprocess
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from urllib.parse import quote
+
+REPO = "vvvvveng/Scripting-releases"
+BRANCH = "main"
+SCRIPT_EXT = ".scripting"
+IMAGE_DIR = Path("项目展示图")
+# 文件名包含这些关键词的脚本不展示
+SKIP_KEYWORDS = ["请勿下载"]
+# 置顶脚本：名字包含这些关键词的排在最前面（可多写几个，越靠前越优先）
+PIN_KEYWORDS = ["脚本管理工具"]
+
+
+def import_url(file_name: str) -> str:
+    """构造 Scripting 一键导入链接。
+
+    下载地址走 github.io 域名（Pages 已启用），
+    国内网络可正常访问，避免 raw.githubusercontent.com 被墙导致下载失败。
+    """
+    raw = f"https://vvvvvveng.github.io/Scripting-releases/{file_name}"
+    payload = quote(f'["{raw}"]', safe="")
+    return f"https://scripting.fun/import_scripts?urls={payload}"
+
+
+def last_commit_time(file_name: str) -> int:
+    """返回该文件最近一次提交的时间戳（秒）。
+
+    Actions 里 git checkout 后所有文件 mtime 都相同，
+    所以用 git log 取真实修改时间；取不到时退回文件系统 mtime。
+    """
+    try:
+        out = subprocess.run(
+            ["git", "log", "-1", "--format=%ct", "--", file_name],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        ).stdout.strip()
+        if out:
+            return int(out)
+    except Exception:
+        pass
+    try:
+        return int(Path(file_name).stat().st_mtime)
+    except Exception:
+        return 0
+
+
+def format_time(ts: int) -> str:
+    """把时间戳格式化为可读时间（北京时间，到分钟）。"""
+    try:
+        dt = datetime.fromtimestamp(ts, tz=timezone(timedelta(hours=8)))
+        return dt.strftime("%Y-%m-%d %H:%M")
+    except Exception:
+        return "—"
+
+
+def read_version(file_name: str) -> str:
+    """从 .scripting 包内 script.json 读取版本号，读不到返回空串。"""
+    try:
+        import zipfile
+
+        with zipfile.ZipFile(file_name) as z:
+            for name in z.namelist():
+                if name.endswith("script.json"):
+                    try:
+                        v = json.loads(z.read(name)).get("version")
+                    except Exception:
+                        continue
+                    if v:
+                        return str(v)
+    except Exception:
+        pass
+    return ""
+
+
+def human_size(n: int) -> str:
+    size = float(n)
+    for unit in ("B", "KB", "MB", "GB"):
+        if size < 1024 or unit == "GB":
+            return f"{int(size)} {unit}" if unit == "B" else f"{size:.1f} {unit}"
+        size /= 1024
+    return f"{n} B"
+
+
+def collect_entries():
+    """收集根目录 .scripting 文件，并匹配项目展示图目录里的同名图片。"""
+    scripts = sorted(
+        (
+            p
+            for p in Path(".").iterdir()
+            if p.is_file()
+            and p.suffix.lower() == SCRIPT_EXT
+            and not any(k in p.name for k in SKIP_KEYWORDS)
+        ),
+        key=lambda p: (
+            min(
+                (i for i, k in enumerate(PIN_KEYWORDS) if k in p.stem),
+                default=len(PIN_KEYWORDS),
+            ),
+            p.name,
+        ),
+    )
+
+    entries = []
+    for s in scripts:
+        img = None
+        for ext in (".png", ".jpg", ".jpeg", ".gif"):
+            c = IMAGE_DIR / (s.stem + ext)
+            if c.exists():
+                img = c
+                break
+        entries.append(
+            {
+                "name": s.stem,
+                "file": s,
+                "size": human_size(s.stat().st_size),
+                "img": img,
+            }
+        )
+    return entries
+
+
+def update_readme(entries):
+    readme = Path("README.md")
+    original = readme.read_text(encoding="utf-8") if readme.exists() else ""
+    # 幂等：先移除旧的作品列表，只保留介绍部分
+    original = re.sub(
+        r"<!-- AUTO-GENERATED-START -->.*?<!-- AUTO-GENERATED-END -->",
+        "",
+        original,
+        flags=re.S,
+    ).rstrip() + "\n\n"
+
+    rows = []
+    for e in entries:
+        img_md = (
+            f"![{e['name']}]({quote(str(e['img']), safe='/')})"
+            if e["img"]
+            else "—"
+        )
+        file_rel = quote(str(e["file"]), safe="/")
+        rows.append(
+            f"| {img_md} | **{e['name']}** | {e['size']} | [一键导入]({import_url(str(e['file']))}) |"
+        )
+
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    block = (
+        "<!-- AUTO-GENERATED-START -->\n"
+        "## 📦 作品合集\n\n"
+        f"> 由 WWWeng🐝 维护 · 共 {len(entries)} 件作品 · 更新于 {now}\n\n"
+        "| 展示 | 名称 | 大小 | 下载 |\n"
+        "| --- | --- | --- | --- |\n"
+        + "\n".join(rows)
+        + "\n\n<!-- AUTO-GENERATED-END -->\n"
+    )
+
+    readme.write_text(original + block, encoding="utf-8")
+    print(f"✅ README.md 已更新，共 {len(entries)} 件作品")
+
+
+def write_gallery(entries):
+    # 图片用相对路径（gallery.html 与 项目展示图/ 同处仓库根目录），
+    # 这样在 GitHub Pages 上图片走 github.io 域名加载，国内访问更稳定。
+    # 卡片点击跳转 Scripting 一键导入页。
+
+    cards = []
+    for e in entries:
+        if e["img"]:
+            thumb = f'<img src="{quote(str(e["img"]), safe="/")}" alt="{e["name"]}" loading="lazy">'
+        else:
+            thumb = '<div class="noimg">🖥️</div>'
+        href = import_url(str(e["file"]))
+        mtime = last_commit_time(str(e["file"]))
+        cards.append(
+            '\n      <a class="card" href="{}" data-mtime="{}" target="_blank">\n'
+            '        <div class="thumb">{}</div>\n'
+            '        <div class="meta">\n'
+            '          <div class="name">{}</div>\n'
+            '          <div class="info-row">\n'
+            '            <div class="ver">v{}</div>\n'
+            '            <div class="time">🕒 {}</div>\n'
+            '          </div>\n'
+            "        </div>\n"
+            "      </a>".format(href, mtime, thumb, e["name"], read_version(str(e["file"])), format_time(mtime))
+        )
+
+    html = """<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -40,21 +239,25 @@
   .noimg { font-size: 48px; opacity: .4; }
   .meta { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 14px; }
   .name { font-size: 15px; font-weight: 600; text-align: center; overflow: hidden;
-          text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
-  .size { color: #8b949e; font-size: 12px; }
+          text-overflow: ellipsis; white-space: nowrap; }
+  .info-row { display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .ver { display: inline-block; padding: 1px 9px; border-radius: 10px;
+         background: rgba(63,185,80,.12); border: 1px solid rgba(63,185,80,.3);
+         color: #3fb950; font-size: 11px; font-weight: 600; }
+  .time { color: #8b949e; font-size: 12px; }
   footer { text-align: center; color: #484f58; font-size: 12px; padding-bottom: 40px; }
 </style>
 </head>
 <body>
 <header>
   <h1>🛠 Scripting 作品合集</h1>
-  <p>由 WWWeng🐝 维护 · 共 3 件作品</p>
+  <p>由 WWWeng🐝 维护 · 共 __COUNT__ 件作品</p>
   <div class="btn-group">
     <a class="btn" href="https://t.me/wwwengshare" target="_blank">
       <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
       频道
     </a>
-    <a class="btn" href="https://github.com/vvvvvveng/Scripting-releases" target="_blank">
+    <a class="btn" href="https://github.com/vvvvvveng?tab=repositories" target="_blank">
       <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
       仓库
     </a>
@@ -67,30 +270,9 @@
     <option value="recent">最新修改</option>
   </select>
 </div>
-<div class="gallery" id="gallery">
-      <a class="card" href="https://scripting.fun/import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2F%E8%84%9A%E6%9C%AC%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7.scripting%22%5D" data-mtime="1787373355" target="_blank">
-        <div class="thumb"><img src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/%E8%84%9A%E6%9C%AC%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7.png" alt="脚本管理工具" loading="lazy"></div>
-        <div class="meta">
-          <div class="name">脚本管理工具</div>
-          <div class="size">584.3 KB</div>
-        </div>
-      </a>
-      <a class="card" href="https://scripting.fun/import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2FDeepSeek%E7%94%A8%E9%87%8F%E4%BD%99%E9%A2%9D%E6%9F%A5%E8%AF%A2.scripting%22%5D" data-mtime="1787373355" target="_blank">
-        <div class="thumb"><img src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/DeepSeek%E7%94%A8%E9%87%8F%E4%BD%99%E9%A2%9D%E6%9F%A5%E8%AF%A2.png" alt="DeepSeek用量余额查询" loading="lazy"></div>
-        <div class="meta">
-          <div class="name">DeepSeek用量余额查询</div>
-          <div class="size">104.3 KB</div>
-        </div>
-      </a>
-      <a class="card" href="https://scripting.fun/import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2F%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7.scripting%22%5D" data-mtime="1787373355" target="_blank">
-        <div class="thumb"><img src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7.png" alt="正则表达式测试工具" loading="lazy"></div>
-        <div class="meta">
-          <div class="name">正则表达式测试工具</div>
-          <div class="size">80.4 KB</div>
-        </div>
-      </a>
+<div class="gallery" id="gallery">__CARDS__
 </div>
-<footer>© WWWeng🐝 · Generated by GitHub Actions · vvvvvveng/Scripting-releases</footer>
+<footer>© WWWeng🐝 · vvvvvveng/Scripting-releases</footer>
 <script>
   const gallery = document.getElementById('gallery');
   const input = document.getElementById('search');
@@ -120,3 +302,20 @@
 </script>
 </body>
 </html>
+"""
+    html = html.replace("__COUNT__", str(len(entries))).replace(
+        "__CARDS__", "".join(cards)
+    )
+
+    Path("gallery.html").write_text(html, encoding="utf-8")
+    print("✅ gallery.html 已生成")
+
+
+def main():
+    entries = collect_entries()
+    update_readme(entries)
+    write_gallery(entries)
+
+
+if __name__ == "__main__":
+    main()
