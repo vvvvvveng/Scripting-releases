@@ -15,7 +15,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import quote
 
-REPO = "vvvvvveng/Scripting-releases"
+REPO = "vvvvveng/Scripting-releases"
 BRANCH = "main"
 SCRIPT_EXT = ".scripting"
 IMAGE_DIR = Path("项目展示图")
@@ -88,7 +88,11 @@ def read_version(file_name: str) -> str:
 
 
 def read_meta(file_name: str):
-    """读取 .scripting 包内 script.json 的介绍与最近更新说明。"""
+    """读取 .scripting 包内 script.json 的介绍与最近更新说明。
+
+    介绍用 script.json 的 description（或 localizedDescriptions.zh）；
+    最近更新说明用自定义字段 changelog（用户手动填写），取不到返回空串。
+    """
     try:
         import zipfile
 
@@ -220,7 +224,7 @@ def write_gallery(entries):
             '        {}\n'
             '        <div class="meta">\n'
             '          <div class="name">{}</div>\n'
-            '          <div class="time-bottom">v{} · 🕒 {}</div>\n'
+            '          <div class="time-bottom"><span class="ver">v{}</span> · 🕒 {}</div>\n'
             "        </div>\n"
             "      </a>".format(href, mtime, preview, e["name"], read_version(str(e["file"])), format_time(mtime))
         )
@@ -264,10 +268,14 @@ def write_gallery(entries):
           transition: transform .15s, border-color .15s;
           -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   .card:hover { transform: translateY(-4px); border-color: #3fb950; }
-  .meta { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 18px 14px; }
-  .time-bottom { align-self: flex-end; margin-top: 4px; color: #6e7681; font-size: 10px; }
+  .meta { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 24px 14px 18px; }
+  .time-bottom { align-self: flex-end; margin-top: 4px; color: #6e7681; font-size: 10px;
+                 display: flex; align-items: center; gap: 5px; }
   .name { font-size: 15px; font-weight: 600; text-align: center; overflow: hidden;
           text-overflow: ellipsis; white-space: nowrap; }
+  .ver { display: inline-block; padding: 1px 9px; border-radius: 10px;
+         background: rgba(63,185,80,.12); border: 1px solid rgba(63,185,80,.3);
+         color: #3fb950; font-size: 11px; font-weight: 600; }
   .icon-btn { display: inline-flex; align-items: center; justify-content: center;
               width: 22px; height: 22px; padding: 0; border: none; background: transparent;
               font-size: 13px; line-height: 1; cursor: pointer; border-radius: 6px;
@@ -328,6 +336,13 @@ def write_gallery(entries):
 <div class="gallery" id="gallery">__CARDS__
 </div>
 <div class="lightbox" id="lightbox"><div class="lightbox-img" id="lightboxImg"></div></div>
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div class="modal-title"><span id="modalTitle"></span><button class="icon-btn" id="modalX" title="关闭">✕</button></div>
+    <div class="modal-body" id="modalBody"></div>
+    <button class="modal-close" id="modalClose">关闭</button>
+  </div>
+</div>
 <footer>© WWWeng🐝 · vvvvvveng/Scripting-releases</footer>
 <script>
   const gallery = document.getElementById('gallery');
@@ -355,6 +370,20 @@ def write_gallery(entries):
     }
     ordered.forEach(function (card) { gallery.appendChild(card); });
   });
+
+  // 信息弹窗：软件介绍 / 最近更新说明
+  const modal = document.getElementById('modal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalBody = document.getElementById('modalBody');
+  function openModal(title, text) {
+    modalTitle.textContent = title;
+    modalBody.textContent = text;
+    modal.classList.add('open');
+  }
+  function closeModal() { modal.classList.remove('open'); }
+  modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('modalX').addEventListener('click', closeModal);
 
   // 长按脚本名 → 全屏预览图片（背景图，无选中/放大行为），松手退出
   // 用 Pointer Events + setPointerCapture：长按触发后 lightbox 覆盖层出现
