@@ -174,7 +174,9 @@ def update_readme(entries):
 def write_gallery(entries):
     # 图片用相对路径（gallery.html 与 项目展示图/ 同处仓库根目录），
     # 这样在 GitHub Pages 上图片走 github.io 域名加载，国内访问更稳定。
-    # 卡片点击跳转 Scripting 一键导入页，长按卡片可预览展示图。
+    # 卡片点击跳转 Scripting 一键导入页，长按卡片预览展示图。
+    # 预览用 CSS 背景图而非 <img>：背景图不是"图片"，长按时不会触发
+    # iOS 的选中/放大镜/图片菜单，预览图永远清晰原样显示。
 
     cards = []
     for e in entries:
@@ -247,11 +249,14 @@ def write_gallery(entries):
   .note { max-width: 1080px; margin: -12px auto 16px; padding: 0 20px;
           color: #8b949e; font-size: 12px; text-align: center; }
   .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.88); display: none;
-              align-items: center; justify-content: center; z-index: 99; }
+              align-items: center; justify-content: center; z-index: 99;
+              -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
+              touch-action: none; }
   .lightbox.open { display: flex; }
-  .lightbox img { max-width: 92%; max-height: 92%; object-fit: contain;
-                  border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,.6);
-                  -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+  .lightbox-img { width: 92%; height: 92%; border-radius: 8px;
+                  background-repeat: no-repeat; background-position: center;
+                  background-size: contain; box-shadow: 0 10px 40px rgba(0,0,0,.6);
+                  pointer-events: none; }
   footer { text-align: center; color: #484f58; font-size: 12px; padding-bottom: 40px; }
 </style>
 </head>
@@ -280,7 +285,7 @@ def write_gallery(entries):
 <div class="note">💡 长按卡片可预览脚本截图</div>
 <div class="gallery" id="gallery">__CARDS__
 </div>
-<div class="lightbox" id="lightbox"><img id="lightboxImg" alt="预览"></div>
+<div class="lightbox" id="lightbox"><div class="lightbox-img" id="lightboxImg"></div></div>
 <footer>© WWWeng🐝 · vvvvvveng/Scripting-releases</footer>
 <script>
   const gallery = document.getElementById('gallery');
@@ -309,7 +314,7 @@ def write_gallery(entries):
     ordered.forEach(function (card) { gallery.appendChild(card); });
   });
 
-  // 长按卡片 → 全屏预览图片，松手退出
+  // 长按卡片 → 全屏预览（背景图，无选中/放大行为），松手退出
   const lightbox = document.getElementById('lightbox');
   const lightboxImg = document.getElementById('lightboxImg');
   let pressTimer = null;
@@ -317,7 +322,7 @@ def write_gallery(entries):
 
   function closeLightbox() {
     lightbox.classList.remove('open');
-    lightboxImg.src = '';
+    lightboxImg.style.backgroundImage = '';
     previewed = false;
   }
   lightbox.addEventListener('click', closeLightbox);
@@ -335,7 +340,7 @@ def write_gallery(entries):
       clearPress();
       pressTimer = setTimeout(function () {
         previewed = true;
-        lightboxImg.src = imgSrc;
+        lightboxImg.style.backgroundImage = "url('" + imgSrc + "')";
         lightbox.classList.add('open');
       }, 450);
     }
