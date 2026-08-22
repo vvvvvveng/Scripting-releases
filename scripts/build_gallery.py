@@ -7,9 +7,10 @@
 
 由 .github/workflows/generate.yml 每次 push 后自动执行。
 """
+import json
 import re
 import subprocess
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import quote
 
@@ -55,6 +56,34 @@ def last_commit_time(file_name: str) -> int:
         return int(Path(file_name).stat().st_mtime)
     except Exception:
         return 0
+
+
+def format_time(ts: int) -> str:
+    """把时间戳格式化为可读时间（北京时间，到分钟）。"""
+    try:
+        dt = datetime.fromtimestamp(ts, tz=timezone(timedelta(hours=8)))
+        return dt.strftime("%Y-%m-%d %H:%M")
+    except Exception:
+        return "--"
+
+
+def read_version(file_name: str) -> str:
+    """从 .scripting 包内 script.json 读取版本号，读不到返回空串。"""
+    try:
+        import zipfile
+
+        with zipfile.ZipFile(file_name) as z:
+            for name in z.namelist():
+                if name.endswith("script.json"):
+                    try:
+                        v = json.loads(z.read(name)).get("version")
+                    except Exception:
+                        continue
+                    if v:
+                        return str(v)
+    except Exception:
+        pass
+    return ""
 
 
 def human_size(n: int) -> str:
@@ -120,7 +149,7 @@ def update_readme(entries):
         img_md = (
             f"![{e['name']}]({quote(str(e['img']), safe='/')})"
             if e["img"]
-            else "—"
+            else "--"
         )
         file_rel = quote(str(e["file"]), safe="/")
         rows.append(
@@ -160,9 +189,12 @@ def write_gallery(entries):
             '        <div class="thumb">{}</div>\n'
             '        <div class="meta">\n'
             '          <div class="name">{}</div>\n'
-            '          <div class="size">{}</div>\n'
+            '          <div class="info-row">\n'
+            '            <div class="ver">v{}</div>\n'
+            '            <div class="time">🕒 {}</div>\n'
+            '          </div>\n'
             "        </div>\n"
-            "      </a>".format(href, mtime, thumb, e["name"], e["size"])
+            "      </a>".format(href, mtime, thumb, e["name"], read_version(str(e["file"])), format_time(mtime))
         )
 
     html = """<!DOCTYPE html>
@@ -207,8 +239,12 @@ def write_gallery(entries):
   .noimg { font-size: 48px; opacity: .4; }
   .meta { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 14px; }
   .name { font-size: 15px; font-weight: 600; text-align: center; overflow: hidden;
-          text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
-  .size { color: #8b949e; font-size: 12px; }
+          text-overflow: ellipsis; white-space: nowrap; }
+  .info-row { display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .ver { display: inline-block; padding: 1px 9px; border-radius: 10px;
+         background: rgba(63,185,80,.12); border: 1px solid rgba(63,185,80,.3);
+         color: #3fb950; font-size: 11px; font-weight: 600; }
+  .time { color: #8b949e; font-size: 12px; }
   footer { text-align: center; color: #484f58; font-size: 12px; padding-bottom: 40px; }
 </style>
 </head>
@@ -221,7 +257,7 @@ def write_gallery(entries):
       <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
       频道
     </a>
-    <a class="btn" href="https://github.com/vvvvvveng/Scripting-releases" target="_blank">
+    <a class="btn" href="https://github.com/vvvvvveng?tab=repositories" target="_blank">
       <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
       仓库
     </a>
@@ -236,7 +272,7 @@ def write_gallery(entries):
 </div>
 <div class="gallery" id="gallery">__CARDS__
 </div>
-<footer>© WWWeng🐝 · Generated by GitHub Actions · vvvvvveng/Scripting-releases</footer>
+<footer>© WWWeng🐝 · vvvvvveng/Scripting-releases</footer>
 <script>
   const gallery = document.getElementById('gallery');
   const input = document.getElementById('search');
