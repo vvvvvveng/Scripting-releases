@@ -149,6 +149,7 @@
   let previewed = false;
   let suppressClick = false;
   let lastTouchEnd = 0;
+  let startX = 0, startY = 0;
 
   function closeLightbox() {
     lightbox.classList.remove('open');
@@ -162,41 +163,59 @@
     if (!srcEl) return;
     const imgSrc = srcEl.getAttribute('src');
 
-    function clearPress() {
+    // 只取消未触发的长按计时，不影响已经打开的预览
+    function cancelPress() {
       if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+    }
+    // 真实松手：取消计时 + 关闭预览 + 拦截随后的 click
+    function endPress() {
+      cancelPress();
       if (previewed) {
         closeLightbox();
-        suppressClick = true;   // 长按预览过，拦截随后的 click，避免误触导入
+        suppressClick = true;
       }
     }
-    function startPress() {
-      clearPress();
+    function startPress(e) {
+      cancelPress();
       suppressClick = false;    // 新的触摸/按压开始，重置拦截
+      const p = e.touches ? e.touches[0] : e;
+      startX = p.clientX;
+      startY = p.clientY;
       pressTimer = setTimeout(function () {
         previewed = true;
         lightboxImg.style.backgroundImage = "url('" + imgSrc + "')";
         lightbox.classList.add('open');
       }, 450);
     }
+    // 手指明显移动（滚动意图）才取消长按；微小抖动（iOS 常见）不影响
+    function movePress(e) {
+      const p = e.touches ? e.touches[0] : e;
+      if (!p) return;
+      if (Math.abs(p.clientX - startX) > 12 || Math.abs(p.clientY - startY) > 12) {
+        if (previewed) { closeLightbox(); suppressClick = true; }
+        cancelPress();
+      }
+    }
 
     card.addEventListener('touchstart', startPress, { passive: true });
     card.addEventListener('touchend', function () {
       lastTouchEnd = Date.now();
-      clearPress();
+      endPress();
     });
-    card.addEventListener('touchmove', clearPress);
-    card.addEventListener('touchcancel', clearPress);
+    card.addEventListener('touchmove', movePress);
+    // touchcancel 只取消计时，不关闭已打开的预览（避免 iOS 26 误触结束）
+    card.addEventListener('touchcancel', cancelPress);
     // iOS 在 touchend 后会补发合成的 mouse 事件（mousedown/mouseup/click），
     // 用时间戳过滤掉它们，避免把拦截标志提前重置导致长按后误触跳转
     card.addEventListener('mousedown', function (e) {
       if (Date.now() - lastTouchEnd < 500) return;
-      startPress();
+      startPress(e);
     });
     card.addEventListener('mouseup', function (e) {
       if (Date.now() - lastTouchEnd < 500) return;
-      clearPress();
+      endPress();
     });
-    card.addEventListener('mouseleave', clearPress);
+    card.addEventListener('mouseleave', cancelPress);
     card.addEventListener('click', function (e) {
       if (previewed || suppressClick) {
         e.preventDefault(); e.stopPropagation();
