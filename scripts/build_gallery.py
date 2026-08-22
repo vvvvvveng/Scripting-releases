@@ -84,7 +84,7 @@ def update_readme(entries):
         img_md = (
             f"![{e['name']}]({quote(str(e['img']), safe='/')})"
             if e["img"]
-            else "—"
+            else "--"
         )
         file_rel = quote(str(e["file"]), safe="/")
         rows.append(
@@ -150,7 +150,7 @@ def write_gallery(entries):
           border-radius: 12px; overflow: hidden; text-decoration: none; color: inherit;
           transition: transform .15s, border-color .15s; }
   .card:hover { transform: translateY(-4px); border-color: #3fb950; }
-  .thumb { height: 340px; background: #0d1117; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .thumb { aspect-ratio: 9 / 19.5; background: #0d1117; display: flex; align-items: center; justify-content: center; overflow: hidden; }
   .thumb img { width: 100%; height: 100%; object-fit: contain; }
   .noimg { font-size: 48px; opacity: .4; }
   .meta { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; }
