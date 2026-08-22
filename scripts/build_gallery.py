@@ -3,7 +3,7 @@
 """
 自动扫描仓库中的 .scripting 脚本，生成作品合集：
   1. README.md  末尾追加作品表格（幂等，重复运行只替换列表部分）
-  2. gallery.html  独立画廊页面（适配 GitHub Pages）
+  2. gallery.html  独立画廊页面（适配 GitHub Pages，含搜索框和排序）
 
 由 .github/workflows/generate.yml 每次 push 后自动执行。
 """
@@ -18,6 +18,8 @@ SCRIPT_EXT = ".scripting"
 IMAGE_DIR = Path("项目展示图")
 # 文件名包含这些关键词的脚本不展示
 SKIP_KEYWORDS = ["请勿下载"]
+# 置顶脚本：名字包含这些关键词的排在最前面（可多写几个，越靠前越优先）
+PIN_KEYWORDS = ["脚本管理工具"]
 
 
 def import_url(file_name: str) -> str:
@@ -50,7 +52,13 @@ def collect_entries():
             and p.suffix.lower() == SCRIPT_EXT
             and not any(k in p.name for k in SKIP_KEYWORDS)
         ),
-        key=lambda p: p.name,
+        key=lambda p: (
+            min(
+                (i for i, k in enumerate(PIN_KEYWORDS) if k in p.stem),
+                default=len(PIN_KEYWORDS),
+            ),
+            p.name,
+        ),
     )
 
     entries = []
@@ -88,7 +96,7 @@ def update_readme(entries):
         img_md = (
             f"![{e['name']}]({quote(str(e['img']), safe='/')})"
             if e["img"]
-            else "--"
+            else "—"
         )
         file_rel = quote(str(e["file"]), safe="/")
         rows.append(
@@ -99,7 +107,7 @@ def update_readme(entries):
     block = (
         "<!-- AUTO-GENERATED-START -->\n"
         "## 📦 作品合集\n\n"
-        f"> 由 GitHub Actions 自动生成 · 共 {len(entries)} 件作品 · 更新于 {now}\n\n"
+        f"> 由 WWWeng🐝 维护 · 共 {len(entries)} 件作品 · 更新于 {now}\n\n"
         "| 展示 | 名称 | 大小 | 下载 |\n"
         "| --- | --- | --- | --- |\n"
         + "\n".join(rows)
@@ -122,14 +130,15 @@ def write_gallery(entries):
         else:
             thumb = '<div class="noimg">🖥️</div>'
         href = import_url(str(e["file"]))
+        mtime = int(e["file"].stat().st_mtime)
         cards.append(
-            '\n      <a class="card" href="{}" target="_blank">\n'
+            '\n      <a class="card" href="{}" data-mtime="{}" target="_blank">\n'
             '        <div class="thumb">{}</div>\n'
             '        <div class="meta">\n'
             '          <div class="name">{}</div>\n'
             '          <div class="size">{}</div>\n'
             "        </div>\n"
-            "      </a>".format(href, thumb, e["name"], e["size"])
+            "      </a>".format(href, mtime, thumb, e["name"], e["size"])
         )
 
     html = """<!DOCTYPE html>
@@ -145,14 +154,25 @@ def write_gallery(entries):
   header { padding: 40px 20px 24px; text-align: center; }
   header h1 { margin: 0 0 8px; font-size: 28px; }
   header p { margin: 0; color: #8b949e; font-size: 14px; }
-  .count { display: inline-block; margin-top: 12px; padding: 4px 14px;
-           background: rgba(35,134,54,.13); color: #3fb950; border: 1px solid rgba(35,134,54,.33);
-           border-radius: 20px; font-size: 13px; }
-  .star-btn { display: inline-block; margin: 18px 0 6px; padding: 9px 26px;
-              background: #238636; color: #fff; border-radius: 8px;
-              font-size: 14px; font-weight: 600; text-decoration: none;
-              transition: background .15s, transform .15s; }
-  .star-btn:hover { background: #2ea043; transform: translateY(-1px); }
+  .btn-group { display: flex; justify-content: center; gap: 12px; margin: 18px 0 6px; }
+  .btn { display: inline-block; padding: 9px 26px; color: #fff; border-radius: 8px;
+         font-size: 14px; font-weight: 600; text-decoration: none;
+         transition: background .15s, transform .15s; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-channel { background: #1a8cd8; }
+  .btn-channel:hover { background: #1f9cf0; }
+  .btn-repo { background: #30363d; border: 1px solid #8b949e; }
+  .btn-repo:hover { background: #3d444d; }
+  .toolbar { display: flex; justify-content: center; align-items: center;
+             gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+  .search { width: 300px; max-width: 85%; padding: 10px 16px;
+            background: #161b22; color: #e6edf3; border: 1px solid #30363d;
+            border-radius: 8px; font-size: 14px; outline: none; }
+  .search:focus { border-color: #3fb950; }
+  .search::placeholder { color: #8b949e; }
+  .sort { padding: 10px 14px; background: #161b22; color: #e6edf3;
+          border: 1px solid #30363d; border-radius: 8px; font-size: 14px; outline: none; }
+  .sort:focus { border-color: #3fb950; }
   .gallery { max-width: 1080px; margin: 0 auto; padding: 8px 20px 60px;
              display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
   .card { display: block; background: #161b22; border: 1px solid #30363d;
@@ -171,14 +191,49 @@ def write_gallery(entries):
 <body>
 <header>
   <h1>🛠 Scripting 作品合集</h1>
-  <p>由 GitHub Actions 自动生成 · 每次推送脚本后自动更新</p>
-  <a class="star-btn" href="https://github.com/vvvvvveng/Scripting-releases" target="_blank">⭐ Star 仓库</a>
-  <br>
-  <span class="count">共 __COUNT__ 件作品</span>
+  <p>由 WWWeng🐝 维护 · 共 __COUNT__ 件作品 · 每次推送脚本后自动更新</p>
+  <div class="btn-group">
+    <a class="btn btn-channel" href="https://t.me/wwwengshare" target="_blank">📢 频道</a>
+    <a class="btn btn-repo" href="https://github.com/vvvvvveng/Scripting-releases" target="_blank">📦 仓库</a>
+  </div>
+  <div class="toolbar">
+    <input id="search" class="search" type="search" placeholder="🔍 搜索脚本…">
+    <select id="sort" class="sort">
+      <option value="default">默认排序</option>
+      <option value="recent">最新修改</option>
+    </select>
+  </div>
 </header>
-<div class="gallery">__CARDS__
+<div class="gallery" id="gallery">__CARDS__
 </div>
-<footer>Generated by GitHub Actions · vvvvvveng/Scripting-releases</footer>
+<footer>© WWWeng🐝 · Generated by GitHub Actions · vvvvvveng/Scripting-releases</footer>
+<script>
+  const gallery = document.getElementById('gallery');
+  const input = document.getElementById('search');
+  const sortSel = document.getElementById('sort');
+  const cards = Array.prototype.slice.call(gallery.querySelectorAll('.card'));
+  const originalOrder = cards.slice();
+
+  input.addEventListener('input', function () {
+    const q = input.value.trim().toLowerCase();
+    cards.forEach(function (card) {
+      const name = card.querySelector('.name').textContent.toLowerCase();
+      card.style.display = name.indexOf(q) !== -1 ? '' : 'none';
+    });
+  });
+
+  sortSel.addEventListener('change', function () {
+    let ordered;
+    if (sortSel.value === 'recent') {
+      ordered = cards.slice().sort(function (a, b) {
+        return (parseInt(b.dataset.mtime, 10) || 0) - (parseInt(a.dataset.mtime, 10) || 0);
+      });
+    } else {
+      ordered = originalOrder.slice();
+    }
+    ordered.forEach(function (card) { gallery.appendChild(card); });
+  });
+</script>
 </body>
 </html>
 """
