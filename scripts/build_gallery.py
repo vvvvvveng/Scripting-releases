@@ -15,7 +15,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import quote
 
-REPO = "vvvvveng/Scripting-releases"
+REPO = "vvvvvveng/Scripting-releases"
 BRANCH = "main"
 SCRIPT_EXT = ".scripting"
 IMAGE_DIR = Path("项目展示图")
@@ -88,11 +88,7 @@ def read_version(file_name: str) -> str:
 
 
 def read_meta(file_name: str):
-    """读取 .scripting 包内 script.json 的介绍与最近更新说明。
-
-    介绍用 script.json 的 description（或 localizedDescriptions.zh）；
-    最近更新说明用自定义字段 changelog（用户手动填写），取不到返回空串。
-    """
+    """读取 .scripting 包内 script.json 的介绍与最近更新说明。"""
     try:
         import zipfile
 
@@ -205,10 +201,10 @@ def write_gallery(entries):
     # 卡片点击跳转 Scripting 一键导入页，长按卡片预览展示图。
     # 预览用 CSS 背景图而非 <img>：背景图不是"图片"，长按时不会触发
     # iOS 的选中/放大镜/图片菜单，预览图永远清晰原样显示。
-    # 更新时间固定在卡片右下角；版本号在脚本名前面，ℹ️📝 两个图标在脚本名后面，
-    # 分别弹窗显示软件介绍（script.json 的 description）与最近更新说明（changelog）。
-    # lightbox 预览层必须配套 .lightbox / .lightbox.open / .lightbox-img 样式，
-    # 否则长按触发后没有可见的预览层（曾因此丢失过长按预览功能）。
+    # 更新时间与版本号固定在卡片右下角。
+    # 长按卡片预览展示图（长按设定与 2026-08-22 15:27 提交 8ce8e20000 一致：
+    # Pointer Events + setPointerCapture，lightbox 用 touch-action:none /
+    # user-select:none / pointer-events:none 保证真机长按稳定）。
 
     cards = []
     for e in entries:
@@ -219,22 +215,14 @@ def write_gallery(entries):
             preview = (
                 '<img class="preview-src" src="{}" alt="" style="display:none">'
             ).format(quote(str(e["img"]), safe="/"))
-        meta = read_meta(str(e["file"]))
-        intro_attr = html.escape(meta["desc"] or "暂无介绍", quote=True)
-        changelog_attr = html.escape(meta["changelog"] or "暂无更新说明", quote=True)
         cards.append(
             '\n      <a class="card" href="{}" data-mtime="{}" target="_blank">\n'
             '        {}\n'
             '        <div class="meta">\n'
-            '          <div class="title-row">\n'
-            '            <span class="ver">v{}</span>\n'
-            '            <span class="name">{}</span>\n'
-            '            <button class="icon-btn" type="button" title="软件介绍" data-content="{}">ℹ️</button>\n'
-            '            <button class="icon-btn" type="button" title="最近更新说明" data-content="{}">📝</button>\n'
-            '          </div>\n'
-            '          <div class="time-bottom">🕒 {}</div>\n'
+            '          <div class="name">{}</div>\n'
+            '          <div class="time-bottom">v{} · 🕒 {}</div>\n'
             "        </div>\n"
-            "      </a>".format(href, mtime, preview, read_version(str(e["file"])), e["name"], intro_attr, changelog_attr, format_time(mtime))
+            "      </a>".format(href, mtime, preview, e["name"], read_version(str(e["file"])), format_time(mtime))
         )
 
     page = """<!DOCTYPE html>
@@ -250,7 +238,7 @@ def write_gallery(entries):
   header { position: relative; padding: 58px 20px 24px; text-align: center; }
   header h1 { margin: 0 0 8px; font-size: 28px; }
   header p { margin: 0; color: #8b949e; font-size: 14px; }
-  header .note { margin: 0 0 6px; color: #6e7681; font-size: 11px; }
+  header .note { margin: 8px 0 0; color: #6e7681; font-size: 11px; text-align: left; }
   .btn-group { position: absolute; top: 14px; right: 24px; display: flex; gap: 14px; }
   .btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
          color: #c9d1d9; font-size: 12px; font-weight: 500; text-decoration: none;
@@ -278,12 +266,8 @@ def write_gallery(entries):
   .card:hover { transform: translateY(-4px); border-color: #3fb950; }
   .meta { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 18px 14px; }
   .time-bottom { align-self: flex-end; margin-top: 4px; color: #6e7681; font-size: 10px; }
-  .title-row { display: flex; align-items: center; justify-content: center; gap: 6px; max-width: 100%; }
-  .title-row .name { flex: 0 1 auto; min-width: 0; font-size: 15px; font-weight: 600; overflow: hidden;
-                     text-overflow: ellipsis; white-space: nowrap; }
-  .ver { display: inline-block; padding: 1px 9px; border-radius: 10px;
-         background: rgba(63,185,80,.12); border: 1px solid rgba(63,185,80,.3);
-         color: #3fb950; font-size: 11px; font-weight: 600; }
+  .name { font-size: 15px; font-weight: 600; text-align: center; overflow: hidden;
+          text-overflow: ellipsis; white-space: nowrap; }
   .icon-btn { display: inline-flex; align-items: center; justify-content: center;
               width: 22px; height: 22px; padding: 0; border: none; background: transparent;
               font-size: 13px; line-height: 1; cursor: pointer; border-radius: 6px;
@@ -291,11 +275,15 @@ def write_gallery(entries):
               -webkit-tap-highlight-color: transparent; }
   .icon-btn:hover { background: rgba(255,255,255,.12); color: #fff; }
   .icon-btn:active { transform: scale(.9); }
-  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.85); display: none;
-              align-items: center; justify-content: center; z-index: 110; padding: 24px; }
+  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.88); display: none;
+              align-items: center; justify-content: center; z-index: 99;
+              -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
+              touch-action: none; }
   .lightbox.open { display: flex; }
-  .lightbox-img { width: 100%; height: 100%; background-size: contain; background-repeat: no-repeat;
-                  background-position: center; }
+  .lightbox-img { width: 92%; height: 92%; border-radius: 8px;
+                  background-repeat: no-repeat; background-position: center;
+                  background-size: contain; box-shadow: 0 10px 40px rgba(0,0,0,.6);
+                  pointer-events: none; }
   .modal { position: fixed; inset: 0; background: rgba(0,0,0,.72); display: none;
            align-items: center; justify-content: center; z-index: 120; padding: 24px; }
   .modal.open { display: flex; }
@@ -317,8 +305,8 @@ def write_gallery(entries):
 <body>
 <header>
   <h1>🛠 Scripting 作品合集</h1>
-  <p class="note">注：长按卡片可预览脚本截图</p>
   <p>由 WWWeng🐝 维护 · 共 __COUNT__ 件作品</p>
+  <p class="note">注：长按卡片可预览脚本截图</p>
   <div class="btn-group">
     <a class="btn" href="https://t.me/wwwengshare" target="_blank">
       <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
@@ -340,13 +328,6 @@ def write_gallery(entries):
 <div class="gallery" id="gallery">__CARDS__
 </div>
 <div class="lightbox" id="lightbox"><div class="lightbox-img" id="lightboxImg"></div></div>
-<div class="modal" id="modal">
-  <div class="modal-box">
-    <div class="modal-title"><span id="modalTitle"></span><button class="icon-btn" id="modalX" title="关闭">✕</button></div>
-    <div class="modal-body" id="modalBody"></div>
-    <button class="modal-close" id="modalClose">关闭</button>
-  </div>
-</div>
 <footer>© WWWeng🐝 · vvvvvveng/Scripting-releases</footer>
 <script>
   const gallery = document.getElementById('gallery');
@@ -373,33 +354,6 @@ def write_gallery(entries):
       ordered = originalOrder.slice();
     }
     ordered.forEach(function (card) { gallery.appendChild(card); });
-  });
-
-  // 信息弹窗：软件介绍 / 最近更新说明
-  const modal = document.getElementById('modal');
-  const modalTitle = document.getElementById('modalTitle');
-  const modalBody = document.getElementById('modalBody');
-  function openModal(title, text) {
-    modalTitle.textContent = title;
-    modalBody.textContent = text;
-    modal.classList.add('open');
-  }
-  function closeModal() { modal.classList.remove('open'); }
-  modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
-  document.getElementById('modalClose').addEventListener('click', closeModal);
-  document.getElementById('modalX').addEventListener('click', closeModal);
-
-  cards.forEach(function (card) {
-    const introBtn = card.querySelector('.icon-btn');
-    const logBtn = introBtn ? introBtn.nextElementSibling : null;
-    if (introBtn) introBtn.addEventListener('click', function (e) {
-      e.preventDefault(); e.stopPropagation();
-      openModal('软件介绍', introBtn.dataset.content);
-    });
-    if (logBtn) logBtn.addEventListener('click', function (e) {
-      e.preventDefault(); e.stopPropagation();
-      openModal('最近更新说明', logBtn.dataset.content);
-    });
   });
 
   // 长按脚本名 → 全屏预览图片（背景图，无选中/放大行为），松手退出
