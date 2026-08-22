@@ -64,7 +64,7 @@ def format_time(ts: int) -> str:
         dt = datetime.fromtimestamp(ts, tz=timezone(timedelta(hours=8)))
         return dt.strftime("%Y-%m-%d %H:%M")
     except Exception:
-        return "--"
+        return "—"
 
 
 def read_version(file_name: str) -> str:
@@ -149,7 +149,7 @@ def update_readme(entries):
         img_md = (
             f"![{e['name']}]({quote(str(e['img']), safe='/')})"
             if e["img"]
-            else "--"
+            else "—"
         )
         file_rel = quote(str(e["file"]), safe="/")
         rows.append(
@@ -320,6 +320,7 @@ def write_gallery(entries):
   let pressTimer = null;
   let previewed = false;
   let suppressClick = false;
+  let lastTouchEnd = 0;
 
   function closeLightbox() {
     lightbox.classList.remove('open');
@@ -351,14 +352,28 @@ def write_gallery(entries):
     }
 
     card.addEventListener('touchstart', startPress, { passive: true });
-    card.addEventListener('touchend', clearPress);
+    card.addEventListener('touchend', function () {
+      lastTouchEnd = Date.now();
+      clearPress();
+    });
     card.addEventListener('touchmove', clearPress);
     card.addEventListener('touchcancel', clearPress);
-    card.addEventListener('mousedown', startPress);
-    card.addEventListener('mouseup', clearPress);
+    // iOS 在 touchend 后会补发合成的 mouse 事件（mousedown/mouseup/click），
+    // 用时间戳过滤掉它们，避免把拦截标志提前重置导致长按后误触跳转
+    card.addEventListener('mousedown', function (e) {
+      if (Date.now() - lastTouchEnd < 500) return;
+      startPress();
+    });
+    card.addEventListener('mouseup', function (e) {
+      if (Date.now() - lastTouchEnd < 500) return;
+      clearPress();
+    });
     card.addEventListener('mouseleave', clearPress);
     card.addEventListener('click', function (e) {
-      if (previewed || suppressClick) { e.preventDefault(); e.stopPropagation(); previewed = false; suppressClick = false; }
+      if (previewed || suppressClick) {
+        e.preventDefault(); e.stopPropagation();
+        previewed = false; suppressClick = false;
+      }
     });
   });
 </script>
