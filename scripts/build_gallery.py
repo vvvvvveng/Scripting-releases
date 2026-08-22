@@ -205,7 +205,7 @@ def write_gallery(entries):
     # 卡片点击跳转 Scripting 一键导入页，长按卡片预览展示图。
     # 预览用 CSS 背景图而非 <img>：背景图不是"图片"，长按时不会触发
     # iOS 的选中/放大镜/图片菜单，预览图永远清晰原样显示。
-    # 更新时间固定在卡片右上角；版本号后两个图标分别弹窗显示
+    # 更新时间固定在卡片右下角；版本号后两个图标分别弹窗显示
     # 软件介绍（script.json 的 description）与最近更新说明（changelog）。
 
     cards = []
@@ -224,15 +224,15 @@ def write_gallery(entries):
             '\n      <a class="card" href="{}" data-mtime="{}" target="_blank">\n'
             '        {}\n'
             '        <div class="meta">\n'
-            '          <div class="time-top">🕒 {}</div>\n'
             '          <div class="name">{}</div>\n'
             '          <div class="info-row">\n'
             '            <div class="ver">v{}</div>\n'
             '            <button class="icon-btn" type="button" title="软件介绍" data-content="{}">ℹ️</button>\n'
             '            <button class="icon-btn" type="button" title="最近更新说明" data-content="{}">📝</button>\n'
             '          </div>\n'
+            '          <div class="time-bottom">🕒 {}</div>\n'
             "        </div>\n"
-            "      </a>".format(href, mtime, preview, format_time(mtime), e["name"], read_version(str(e["file"])), intro_attr, changelog_attr)
+            "      </a>".format(href, mtime, preview, e["name"], read_version(str(e["file"])), intro_attr, changelog_attr, format_time(mtime))
         )
 
     page = """<!DOCTYPE html>
@@ -248,6 +248,7 @@ def write_gallery(entries):
   header { position: relative; padding: 58px 20px 24px; text-align: center; }
   header h1 { margin: 0 0 8px; font-size: 28px; }
   header p { margin: 0; color: #8b949e; font-size: 14px; }
+  header .note { margin: 0 0 6px; color: #6e7681; font-size: 11px; }
   .btn-group { position: absolute; top: 14px; right: 24px; display: flex; gap: 14px; }
   .btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
          color: #c9d1d9; font-size: 12px; font-weight: 500; text-decoration: none;
@@ -274,7 +275,7 @@ def write_gallery(entries):
           -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   .card:hover { transform: translateY(-4px); border-color: #3fb950; }
   .meta { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 18px 14px; }
-  .time-top { position: absolute; top: 6px; right: 10px; color: #6e7681; font-size: 10px; }
+  .time-bottom { align-self: flex-end; margin-top: 4px; color: #6e7681; font-size: 10px; }
   .name { font-size: 15px; font-weight: 600; text-align: center; overflow: hidden;
           text-overflow: ellipsis; white-space: nowrap; }
   .info-row { display: flex; align-items: center; justify-content: center; gap: 6px; }
@@ -309,6 +310,7 @@ def write_gallery(entries):
 <body>
 <header>
   <h1>🛠 Scripting 作品合集</h1>
+  <p class="note">注：长按卡片可预览脚本截图</p>
   <p>由 WWWeng🐝 维护 · 共 __COUNT__ 件作品</p>
   <div class="btn-group">
     <a class="btn" href="https://t.me/wwwengshare" target="_blank">
@@ -328,7 +330,6 @@ def write_gallery(entries):
     <option value="recent">最新修改</option>
   </select>
 </div>
-<div class="note">💡 长按卡片可预览脚本截图</div>
 <div class="gallery" id="gallery">__CARDS__
 </div>
 <div class="lightbox" id="lightbox"><div class="lightbox-img" id="lightboxImg"></div></div>
