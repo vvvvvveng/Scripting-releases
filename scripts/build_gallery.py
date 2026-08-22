@@ -21,8 +21,12 @@ SKIP_KEYWORDS = ["请勿下载"]
 
 
 def import_url(file_name: str) -> str:
-    """构造 Scripting 一键导入链接。"""
-    raw = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}/{file_name}"
+    """构造 Scripting 一键导入链接。
+
+    下载地址走 github.io 域名（Pages 已启用），
+    国内网络可正常访问，避免 raw.githubusercontent.com 被墙导致下载失败。
+    """
+    raw = f"https://vvvvvveng.github.io/Scripting-releases/{file_name}"
     payload = quote(f'["{raw}"]', safe="")
     return f"https://scripting.fun/import_scripts?urls={payload}"
 
@@ -144,6 +148,11 @@ def write_gallery(entries):
   .count { display: inline-block; margin-top: 12px; padding: 4px 14px;
            background: rgba(35,134,54,.13); color: #3fb950; border: 1px solid rgba(35,134,54,.33);
            border-radius: 20px; font-size: 13px; }
+  .fork-btn { display: inline-block; margin: 18px 0 6px; padding: 9px 26px;
+              background: #238636; color: #fff; border-radius: 8px;
+              font-size: 14px; font-weight: 600; text-decoration: none;
+              transition: background .15s, transform .15s; }
+  .fork-btn:hover { background: #2ea043; transform: translateY(-1px); }
   .gallery { max-width: 1080px; margin: 0 auto; padding: 8px 20px 60px;
              display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
   .card { display: block; background: #161b22; border: 1px solid #30363d;
@@ -163,6 +172,8 @@ def write_gallery(entries):
 <header>
   <h1>🛠 Scripting 作品合集</h1>
   <p>由 GitHub Actions 自动生成 · 每次推送脚本后自动更新</p>
+  <a class="fork-btn" href="https://github.com/vvvvvveng/Scripting-releases/fork" target="_blank">🍴 Fork 仓库</a>
+  <br>
   <span class="count">共 __COUNT__ 件作品</span>
 </header>
 <div class="gallery">__CARDS__
