@@ -257,7 +257,7 @@ def write_gallery(entries):
   * { box-sizing: border-box; }
   body { margin: 0; font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
          background: #0d1117; color: #e6edf3; }
-  header { position: relative; padding: 58px 20px 40px; text-align: center; }
+  header { position: relative; padding: 72px 20px 40px; text-align: center; }
   header h1 { margin: 0 0 8px; font-size: 28px; }
   header .subtitle { position: absolute; top: 22px; right: 24px; margin: 0;
                      color: #6e7681; font-size: 12px; }
@@ -269,9 +269,9 @@ def write_gallery(entries):
          transition: background .15s, border-color .15s, color .15s; }
   .btn:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.28); color: #fff; }
   .toolbar { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
-  .toolbar-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-  .toolbar .note { margin: 10px 0 0; color: #6e7681; font-size: 11px; }
-  .search { width: 320px; padding: 8px 14px; background: #161b22; color: #e6edf3;
+  .note-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 10px; }
+  .toolbar .note { margin: 0; color: #6e7681; font-size: 11px; }
+  .search { width: 100%; box-sizing: border-box; padding: 8px 14px; background: #161b22; color: #e6edf3;
             border: 1px solid #30363d; border-radius: 8px; font-size: 16px; outline: none;
             transition: border-color .15s, box-shadow .15s; }
   .search:focus { border-color: #3fb950; box-shadow: 0 0 0 3px rgba(63,185,80,.15); }
@@ -346,14 +346,14 @@ def write_gallery(entries):
   </div>
 </header>
 <div class="toolbar">
-  <div class="toolbar-row">
-    <input id="search" class="search" type="search" placeholder="🔍 搜索脚本…">
+  <input id="search" class="search" type="search" placeholder="🔍 搜索脚本…">
+  <div class="note-row">
+    <p class="note">注：长按卡片可预览脚本截图</p>
     <select id="sort" class="sort">
       <option value="default">默认排序</option>
       <option value="recent">最新修改</option>
     </select>
   </div>
-  <p class="note">注：长按卡片可预览脚本截图</p>
 </div>
 <div class="gallery" id="gallery">__CARDS__
 </div>
