@@ -15,14 +15,14 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import quote
 
-REPO = "vvvvveng/Scripting-releases"
+REPO = "vvvvvveng/Scripting-releases"
 BRANCH = "main"
 SCRIPT_EXT = ".scripting"
 IMAGE_DIR = Path("项目展示图")
 # 文件名包含这些关键词的脚本不展示
 SKIP_KEYWORDS = ["请勿下载"]
 # 置顶脚本：名字包含这些关键词的排在最前面（可多写几个，越靠前越优先）
-PIN_KEYWORDS = ["脚本管理工具"]
+PIN_KEYWORDS = ["脚本管理工具", "🐝密码管理器"]
 
 
 def import_url(file_name: str) -> str:
