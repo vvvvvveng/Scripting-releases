@@ -26,14 +26,29 @@ PIN_KEYWORDS = ["脚本管理工具"]
 
 
 def import_url(file_name: str) -> str:
-    """构造 Scripting 一键导入链接。
+    """构造 Scripting 导入落地页链接（README 用）。
 
     下载地址走 github.io 域名（Pages 已启用），
     国内网络可正常访问，避免 raw.githubusercontent.com 被墙导致下载失败。
+    落地页在桌面浏览器也能打开，适合放在 GitHub 网页上的 README。
     """
     raw = f"https://vvvvvveng.github.io/Scripting-releases/{file_name}"
     payload = quote(f'["{raw}"]', safe="")
     return f"https://scripting.fun/import_scripts?urls={payload}"
+
+
+def import_scheme_url(file_name: str) -> str:
+    """构造 Scripting 一键导入深链（gallery.html 用）。
+
+    与落地页（scripting.fun/import_scripts）不同：深链直接用 scripting:// 自定义
+    协议唤起 Scripting 应用导入页，不经过网页跳转。脚本内 WebView 展示 gallery 时，
+    只需把非 http(s) 请求交给系统（Safari.openURL）即可正常弹出安装，
+    各脚本无需再单独针对 scripting.fun 落地页写拦截逻辑。
+    格式与 Scripting 官方 Script.createImportScriptsURLScheme 一致。
+    """
+    raw = f"https://vvvvvveng.github.io/Scripting-releases/{file_name}"
+    payload = quote(f'["{raw}"]', safe="")
+    return f"scripting://import_scripts?urls={payload}"
 
 
 def last_commit_time(file_name: str) -> int:
@@ -205,14 +220,14 @@ def write_gallery(entries):
     # 卡片点击跳转 Scripting 一键导入页，长按卡片预览展示图。
     # 预览用 CSS 背景图而非 <img>：背景图不是"图片"，长按时不会触发
     # iOS 的选中/放大镜/图片菜单，预览图永远清晰原样显示。
-    # 更新时间与版本号固定在卡片下方（版本号绿色框、左下角）。
+    # 更新时间与版本号固定在卡片右下角。
     # 长按卡片预览展示图（长按设定与 2026-08-22 15:27 提交 8ce8e20000 一致：
     # Pointer Events + setPointerCapture，lightbox 用 touch-action:none /
     # user-select:none / pointer-events:none 保证真机长按稳定）。
 
     cards = []
     for e in entries:
-        href = import_url(str(e["file"]))
+        href = import_scheme_url(str(e["file"]))
         mtime = last_commit_time(str(e["file"]))
         preview = ""
         if e["img"]:
@@ -224,7 +239,10 @@ def write_gallery(entries):
             '        {}\n'
             '        <div class="meta">\n'
             '          <div class="name">{}</div>\n'
-            '          <div class="time-bottom"><span class="ver">v{}</span> · 🕒 {}</div>\n'
+            '          <div class="time-bottom">\n'
+            '            <span class="ver">v{}</span>\n'
+            '            <span class="time">🕒 {}</span>\n'
+            '          </div>\n'
             "        </div>\n"
             "      </a>".format(href, mtime, preview, e["name"], read_version(str(e["file"])), format_time(mtime))
         )
@@ -268,9 +286,10 @@ def write_gallery(entries):
           transition: transform .15s, border-color .15s;
           -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   .card:hover { transform: translateY(-4px); border-color: #3fb950; }
-  .meta { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 30px 14px 18px; }
-  .time-bottom { align-self: flex-start; margin-top: 4px; color: #6e7681; font-size: 10px;
-                 display: flex; align-items: center; gap: 5px; }
+  .meta { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 14px 40px; }
+  .time-bottom { position: absolute; bottom: 12px; left: 14px; right: 14px; margin-top: 0;
+                 color: #6e7681; font-size: 10px;
+                 display: flex; align-items: center; justify-content: space-between; }
   .name { font-size: 15px; font-weight: 600; text-align: center; overflow: hidden;
           text-overflow: ellipsis; white-space: nowrap; }
   .ver { display: inline-block; padding: 1px 9px; border-radius: 10px;
