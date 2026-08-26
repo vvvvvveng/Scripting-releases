@@ -8,10 +8,10 @@
   * { box-sizing: border-box; }
   body { margin: 0; font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
          background: #0d1117; color: #e6edf3; }
-  header { position: relative; padding: 58px 20px 24px; text-align: center; }
+  header { position: relative; padding: 58px 20px 40px; text-align: center; }
   header h1 { margin: 0 0 8px; font-size: 28px; }
-  header .subtitle { position: absolute; top: 20px; right: 24px; margin: 0;
-                     color: #8b949e; font-size: 14px; }
+  header .subtitle { position: absolute; top: 22px; right: 24px; margin: 0;
+                     color: #6e7681; font-size: 12px; }
   .btn-group { position: absolute; top: 14px; left: 24px; display: flex; gap: 10px; }
   .btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
          color: #c9d1d9; font-size: 12px; font-weight: 500; text-decoration: none;
@@ -19,7 +19,7 @@
          border-radius: 8px; backdrop-filter: blur(8px);
          transition: background .15s, border-color .15s, color .15s; }
   .btn:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.28); color: #fff; }
-  .toolbar { max-width: 1080px; margin: 0 auto 8px; padding: 0 20px; }
+  .toolbar { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
   .toolbar-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
   .toolbar .note { margin: 10px 0 0; color: #6e7681; font-size: 11px; }
   .search { width: 320px; padding: 8px 14px; background: #161b22; color: #e6edf3;
@@ -31,7 +31,7 @@
           border: 1px solid #30363d; border-radius: 8px; font-size: 13px; outline: none;
           cursor: pointer; transition: border-color .15s; }
   .sort:focus { border-color: #3fb950; }
-  .gallery { max-width: 1080px; margin: 0 auto; padding: 8px 20px 60px;
+  .gallery { max-width: 1080px; margin: 0 auto; padding: 4px 20px 60px;
              display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
   .card { display: block; background: #161b22; border: 1px solid #30363d;
           border-radius: 12px; overflow: hidden; text-decoration: none; color: inherit;
@@ -83,7 +83,7 @@
 </head>
 <body>
 <header>
-  <h1>🛠 Scripting 作品合集</h1>
+  <h1>🛠 Scripting 合集</h1>
   <p class="subtitle">由 WWWeng🐝 维护</p>
   <div class="btn-group">
     <a class="btn" href="https://t.me/wwwengshare" target="_blank">
