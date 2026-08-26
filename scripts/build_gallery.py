@@ -261,7 +261,7 @@ def write_gallery(entries):
   header h1 { margin: 0 0 8px; font-size: 28px; }
   header p { margin: 0; color: #8b949e; font-size: 14px; }
   header .note { margin: 8px 0 0; color: #6e7681; font-size: 11px; text-align: left; }
-  .btn-group { position: absolute; top: 14px; right: 24px; display: flex; gap: 14px; }
+  .btn-group { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); display: flex; gap: 14px; }
   .btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
          color: #c9d1d9; font-size: 12px; font-weight: 500; text-decoration: none;
          background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.14);
