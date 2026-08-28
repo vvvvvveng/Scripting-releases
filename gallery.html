@@ -62,7 +62,14 @@
   .lightbox-img { width: 92%; height: 92%; border-radius: 8px;
                   background-repeat: no-repeat; background-position: center;
                   background-size: contain; box-shadow: 0 10px 40px rgba(0,0,0,.6);
-                  pointer-events: none; }
+                  pointer-events: none; transition: opacity .18s; }
+  .lightbox-page { position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%);
+                   min-width: 46px; text-align: center; padding: 5px 12px; border-radius: 12px;
+                   color: #e6edf3; font-size: 12px; font-weight: 600; letter-spacing: .5px;
+                   background: rgba(22,27,34,.72); border: 1px solid rgba(255,255,255,.14);
+                   -webkit-user-select: none; user-select: none; pointer-events: none;
+                   opacity: 0; transition: opacity .15s; }
+  .lightbox-page.show { opacity: 1; }
   .modal { position: fixed; inset: 0; background: rgba(0,0,0,.72); display: none;
            align-items: center; justify-content: center; z-index: 120; padding: 24px; }
   .modal.open { display: flex; }
@@ -108,7 +115,7 @@
 </div>
 <div class="gallery" id="gallery">
       <a class="card" href="scripting://import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2F%E8%84%9A%E6%9C%AC%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7.scripting%22%5D" data-mtime="1787285612" target="_blank">
-        
+        <img class="preview-src" src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/%E8%84%9A%E6%9C%AC%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7/1.png" alt="" style="display:none">
         <div class="meta">
           <div class="name">脚本管理工具</div>
           <div class="time-bottom">
@@ -118,7 +125,13 @@
         </div>
       </a>
       <a class="card" href="scripting://import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2F%F0%9F%90%9D%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86%E5%99%A8.scripting%22%5D" data-mtime="1787760279" target="_blank">
-        
+        <img class="preview-src" src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/%F0%9F%90%9D%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86%E5%99%A8/1.png" alt="" style="display:none">
+<img class="preview-src" src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/%F0%9F%90%9D%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86%E5%99%A8/2.png" alt="" style="display:none">
+<img class="preview-src" src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/%F0%9F%90%9D%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86%E5%99%A8/3.png" alt="" style="display:none">
+<img class="preview-src" src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/%F0%9F%90%9D%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86%E5%99%A8/4.png" alt="" style="display:none">
+<img class="preview-src" src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/%F0%9F%90%9D%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86%E5%99%A8/5.png" alt="" style="display:none">
+<img class="preview-src" src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/%F0%9F%90%9D%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86%E5%99%A8/6.png" alt="" style="display:none">
+<img class="preview-src" src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/%F0%9F%90%9D%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86%E5%99%A8/7.png" alt="" style="display:none">
         <div class="meta">
           <div class="name">🐝密码管理器</div>
           <div class="time-bottom">
@@ -128,7 +141,7 @@
         </div>
       </a>
       <a class="card" href="scripting://import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2FDeepSeek%E7%94%A8%E9%87%8F%E4%BD%99%E9%A2%9D%E6%9F%A5%E8%AF%A2.scripting%22%5D" data-mtime="1786928499" target="_blank">
-        
+        <img class="preview-src" src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/DeepSeek%E7%94%A8%E9%87%8F%E4%BD%99%E9%A2%9D%E6%9F%A5%E8%AF%A2/1.png" alt="" style="display:none">
         <div class="meta">
           <div class="name">DeepSeek用量余额查询</div>
           <div class="time-bottom">
@@ -138,7 +151,7 @@
         </div>
       </a>
       <a class="card" href="scripting://import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2F%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7.scripting%22%5D" data-mtime="1786669142" target="_blank">
-        
+        <img class="preview-src" src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7/1.png" alt="" style="display:none">
         <div class="meta">
           <div class="name">正则表达式测试工具</div>
           <div class="time-bottom">
@@ -148,7 +161,10 @@
         </div>
       </a>
 </div>
-<div class="lightbox" id="lightbox"><div class="lightbox-img" id="lightboxImg"></div></div>
+<div class="lightbox" id="lightbox">
+  <div class="lightbox-img" id="lightboxImg"></div>
+  <div class="lightbox-page" id="lightboxPage"></div>
+</div>
 <div class="modal" id="modal">
   <div class="modal-box">
     <div class="modal-title"><span id="modalTitle"></span><button class="icon-btn" id="modalX" title="关闭">✕</button></div>
@@ -198,29 +214,74 @@
   document.getElementById('modalClose').addEventListener('click', closeModal);
   document.getElementById('modalX').addEventListener('click', closeModal);
 
-  // 长按脚本名 → 全屏预览图片（背景图，无选中/放大行为），松手退出
+  // 长按脚本名 → 全屏轮播预览截图（背景图，无选中/放大行为），松手退出。
+  // 一个脚本可有多张展示图（项目展示图/<脚本名>/1.png、2.png…），
+  // 长按后按序号自动轮播，底部页码指示当前第几张；单张则静态显示。
   // 用 Pointer Events + setPointerCapture：长按触发后 lightbox 覆盖层出现
   // 会遮挡手指下的卡片，iOS 26 可能因此对触摸序列派发取消/结束事件导致
   // 预览自动关闭；捕获指针后事件强制派发到卡片，遮挡不影响，
   // 按住多久预览就稳定显示多久。
   const lightbox = document.getElementById('lightbox');
   const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxPage = document.getElementById('lightboxPage');
   let pressTimer = null;
   let previewed = false;
   let suppressClick = false;
+  let carouselTimer = null;
+  let fadeToken = 0;
   let startX = 0, startY = 0;
 
+  function stopCarousel() {
+    if (carouselTimer) { clearInterval(carouselTimer); carouselTimer = null; }
+  }
+
   function closeLightbox() {
+    fadeToken++;              // 作废任何进行中的淡入淡出回调
+    stopCarousel();
     lightbox.classList.remove('open');
     lightboxImg.style.backgroundImage = '';
+    lightboxImg.style.opacity = 1;
+    lightboxPage.classList.remove('show');
     previewed = false;
   }
   lightbox.addEventListener('click', closeLightbox);
 
+  // 显示第 i 张；fade=true 时淡出→换图→淡入，轮播切换更平滑
+  function showCarouselImage(imgs, i, fade) {
+    const idx = ((i % imgs.length) + imgs.length) % imgs.length;
+    if (imgs.length > 1) {
+      lightboxPage.textContent = (idx + 1) + ' / ' + imgs.length;
+      lightboxPage.classList.add('show');
+    }
+    if (fade) {
+      const token = ++fadeToken;
+      lightboxImg.style.opacity = 0;
+      setTimeout(function () {
+        if (token !== fadeToken) return;   // 期间已关闭/切换，丢弃
+        lightboxImg.style.backgroundImage = "url('" + imgs[idx] + "')";
+        lightboxImg.style.opacity = 1;
+      }, 180);
+    } else {
+      fadeToken++;
+      lightboxImg.style.backgroundImage = "url('" + imgs[idx] + "')";
+    }
+    return idx;
+  }
+
+  // 多图则每 2 秒自动切到下一张
+  function startCarousel(imgs, from) {
+    stopCarousel();
+    if (imgs.length <= 1) return;
+    let cur = from;
+    carouselTimer = setInterval(function () {
+      cur = showCarouselImage(imgs, cur + 1, true);
+    }, 2000);
+  }
+
   cards.forEach(function (card) {
-    const srcEl = card.querySelector('.preview-src');
-    if (!srcEl) return;
-    const imgSrc = srcEl.getAttribute('src');
+    const srcEls = card.querySelectorAll('.preview-src');
+    if (!srcEls.length) return;
+    const imgs = Array.prototype.map.call(srcEls, function (el) { return el.getAttribute('src'); });
 
     // 只取消未触发的长按计时，不影响已经打开的预览
     function cancelPress() {
@@ -241,8 +302,10 @@
       startY = e.clientY;
       pressTimer = setTimeout(function () {
         previewed = true;
-        lightboxImg.style.backgroundImage = "url('" + imgSrc + "')";
+        stopCarousel();
+        const first = showCarouselImage(imgs, 0, false);
         lightbox.classList.add('open');
+        startCarousel(imgs, first);
       }, 450);
     }
     // 手指明显移动（滚动意图）才取消长按；微小抖动（iOS 常见）不影响
