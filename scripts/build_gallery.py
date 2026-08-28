@@ -337,10 +337,12 @@ def write_gallery(entries):
               -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
               touch-action: none; }
   .lightbox.open { display: flex; }
-  .lightbox-img { width: 92%; height: 92%; border-radius: 8px;
+  .lightbox-img { position: absolute; inset: 4%; border-radius: 8px;
                   background-repeat: no-repeat; background-position: center;
                   background-size: contain; box-shadow: 0 10px 40px rgba(0,0,0,.6);
-                  pointer-events: none; transition: opacity .18s; }
+                  pointer-events: none; opacity: 0;
+                  transition: opacity .45s ease, transform .45s ease;
+                  will-change: opacity, transform; }
   .lightbox-page { position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%);
                    min-width: 46px; text-align: center; padding: 5px 12px; border-radius: 12px;
                    color: #e6edf3; font-size: 12px; font-weight: 600; letter-spacing: .5px;
@@ -394,7 +396,8 @@ def write_gallery(entries):
 <div class="gallery" id="gallery">__CARDS__
 </div>
 <div class="lightbox" id="lightbox">
-  <div class="lightbox-img" id="lightboxImg"></div>
+  <div class="lightbox-img" id="lightboxImgA"></div>
+  <div class="lightbox-img" id="lightboxImgB"></div>
   <div class="lightbox-page" id="lightboxPage"></div>
 </div>
 <div class="modal" id="modal">
@@ -454,49 +457,63 @@ def write_gallery(entries):
   // 预览自动关闭；捕获指针后事件强制派发到卡片，遮挡不影响，
   // 按住多久预览就稳定显示多久。
   const lightbox = document.getElementById('lightbox');
-  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxImgA = document.getElementById('lightboxImgA');
+  const lightboxImgB = document.getElementById('lightboxImgB');
   const lightboxPage = document.getElementById('lightboxPage');
   let pressTimer = null;
   let previewed = false;
   let suppressClick = false;
   let carouselTimer = null;
-  let fadeToken = 0;
   let startX = 0, startY = 0;
+  let curLayer = null;   // 当前显示的图层（A/B 交替）
 
   function stopCarousel() {
     if (carouselTimer) { clearInterval(carouselTimer); carouselTimer = null; }
   }
 
   function closeLightbox() {
-    fadeToken++;              // 作废任何进行中的淡入淡出回调
     stopCarousel();
     lightbox.classList.remove('open');
-    lightboxImg.style.backgroundImage = '';
-    lightboxImg.style.opacity = 1;
+    // 重置两层，下次打开从第一张干净开始
+    [lightboxImgA, lightboxImgB].forEach(function (el) {
+      el.style.transition = 'none';
+      el.style.opacity = 0;
+      el.style.transform = 'translateX(40px)';
+      el.style.backgroundImage = '';
+    });
     lightboxPage.classList.remove('show');
     previewed = false;
+    curLayer = null;
   }
   lightbox.addEventListener('click', closeLightbox);
 
-  // 显示第 i 张；fade=true 时淡出→换图→淡入，轮播切换更平滑
-  function showCarouselImage(imgs, i, fade) {
+  // 显示第 i 张。animate=true 时交叉淡化 + 滑动：
+  // 新图从右侧滑入淡入，旧图同时向左滑出淡出，中间无空白，比硬切顺滑。
+  function showCarouselImage(imgs, i, animate) {
     const idx = ((i % imgs.length) + imgs.length) % imgs.length;
     if (imgs.length > 1) {
       lightboxPage.textContent = (idx + 1) + ' / ' + imgs.length;
       lightboxPage.classList.add('show');
     }
-    if (fade) {
-      const token = ++fadeToken;
-      lightboxImg.style.opacity = 0;
-      setTimeout(function () {
-        if (token !== fadeToken) return;   // 期间已关闭/切换，丢弃
-        lightboxImg.style.backgroundImage = "url('" + imgs[idx] + "')";
-        lightboxImg.style.opacity = 1;
-      }, 180);
+    const next = (curLayer === lightboxImgA) ? lightboxImgB : lightboxImgA;
+    next.style.backgroundImage = "url('" + imgs[idx] + "')";
+    if (animate && curLayer) {
+      next.style.transition = 'none';            // 先把新图放到起始位（右侧）
+      next.style.opacity = 0;
+      next.style.transform = 'translateX(40px)';
+      void next.offsetWidth;                      // 强制 reflow 提交起始状态
+      next.style.transition = '';                 // 恢复过渡
+      next.style.opacity = 1;                     // 新图淡入 + 从右滑入
+      next.style.transform = 'translateX(0)';
+      curLayer.style.opacity = 0;                 // 旧图淡出 + 向左滑出
+      curLayer.style.transform = 'translateX(-40px)';
     } else {
-      fadeToken++;
-      lightboxImg.style.backgroundImage = "url('" + imgs[idx] + "')";
+      next.style.transition = 'none';
+      next.style.opacity = 1;
+      next.style.transform = 'translateX(0)';
+      next.style.transition = '';
     }
+    curLayer = next;
     return idx;
   }
 
