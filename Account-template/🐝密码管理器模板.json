@@ -1,0 +1,176 @@
+{
+  "version": 1,
+  "exportedAt": "2026-08-28T08:04:12.210Z",
+  "templates": [
+    {
+      "name": "Telegram",
+      "fields": [
+        {
+          "key": "custom",
+          "title": "标题"
+        },
+        {
+          "key": "account",
+          "title": "账号"
+        },
+        {
+          "key": "password",
+          "title": "密码",
+          "secure": true
+        },
+        {
+          "key": "account",
+          "title": "用户名"
+        },
+        {
+          "key": "custom",
+          "title": "网址"
+        },
+        {
+          "key": "custom",
+          "title": "App api_id",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "App api_hash",
+          "secure": false
+        }
+      ]
+    },
+    {
+      "name": "Emby",
+      "fields": [
+        {
+          "key": "custom",
+          "title": "标题"
+        },
+        {
+          "key": "custom",
+          "title": "播放情况",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "保号条件",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "主线路",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "备用线路1",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "备用线路2",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "备用线路3",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "端口",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "用户名",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "用户密码",
+          "secure": true
+        },
+        {
+          "key": "custom",
+          "title": "安全密码",
+          "secure": true
+        },
+        {
+          "key": "custom",
+          "title": "设备限制",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "机器人",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "TG群组链接",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "通知频道链接",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "入库频道链接",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "腐竹联系bot",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "注册地址",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "注册账号",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "注册网站密码",
+          "secure": true
+        },
+        {
+          "key": "custom",
+          "title": "注册邮箱",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "签到地址",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "求片地址",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "是否需要签到",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "被禁播放器",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "到期日",
+          "secure": false
+        }
+      ]
+    }
+  ]
+}
