@@ -1,47 +1,7 @@
 {
   "version": 1,
-  "exportedAt": "2026-08-28T08:17:16.951Z",
+  "exportedAt": "2026-08-28T11:51:33.861Z",
   "templates": [
-    {
-      "name": "网页",
-      "fields": [
-        {
-          "key": "custom",
-          "title": "标题"
-        },
-        {
-          "key": "account",
-          "title": "账号"
-        },
-        {
-          "key": "password",
-          "title": "密码",
-          "secure": true
-        },
-        {
-          "key": "account",
-          "title": "用户名"
-        },
-        {
-          "key": "custom",
-          "title": "网址"
-        },
-        {
-          "key": "custom",
-          "title": "手机",
-          "secure": false
-        },
-        {
-          "key": "custom",
-          "title": "邮箱",
-          "secure": false
-        },
-        {
-          "key": "custom",
-          "title": "备注"
-        }
-      ]
-    },
     {
       "name": "Telegram",
       "fields": [
@@ -75,6 +35,11 @@
           "key": "custom",
           "title": "App api_hash",
           "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "备注",
+          "secure": false
         }
       ]
     },
@@ -107,6 +72,151 @@
         {
           "key": "custom",
           "title": "网址",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "备注"
+        }
+      ]
+    },
+    {
+      "name": "Cloudflare",
+      "fields": [
+        {
+          "key": "custom",
+          "title": "标题",
+          "secure": false
+        },
+        {
+          "key": "account",
+          "title": "账号",
+          "secure": false
+        },
+        {
+          "key": "password",
+          "title": "密码",
+          "secure": true
+        },
+        {
+          "key": "account",
+          "title": "用户名",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "网站",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "备注",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "登录邮箱",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "ACCOUNT_ID",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "CLOUDFLARE _API_TOKEN",
+          "secure": true
+        },
+        {
+          "key": "custom",
+          "title": "CLOUDFLARE_ZONE_ID",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "绑定域名",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "备注",
+          "secure": false
+        }
+      ]
+    },
+    {
+      "name": "Gmail",
+      "fields": [
+        {
+          "key": "custom",
+          "title": "标题",
+          "secure": false
+        },
+        {
+          "key": "account",
+          "title": "账号",
+          "secure": false
+        },
+        {
+          "key": "password",
+          "title": "密码",
+          "secure": true
+        },
+        {
+          "key": "account",
+          "title": "用户名",
+          "secure": false
+        },
+        {
+          "key": "token",
+          "title": "Token",
+          "secure": true
+        },
+        {
+          "key": "custom",
+          "title": "网址",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "备注",
+          "secure": false
+        }
+      ]
+    },
+    {
+      "name": "网页",
+      "fields": [
+        {
+          "key": "custom",
+          "title": "标题"
+        },
+        {
+          "key": "account",
+          "title": "账号"
+        },
+        {
+          "key": "password",
+          "title": "密码",
+          "secure": true
+        },
+        {
+          "key": "account",
+          "title": "用户名"
+        },
+        {
+          "key": "custom",
+          "title": "网址"
+        },
+        {
+          "key": "custom",
+          "title": "手机",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "邮箱",
           "secure": false
         },
         {
@@ -246,6 +356,32 @@
           "key": "custom",
           "title": "到期日",
           "secure": false
+        }
+      ]
+    },
+    {
+      "name": "Apple ID",
+      "fields": [
+        {
+          "key": "custom",
+          "title": "标题"
+        },
+        {
+          "key": "account",
+          "title": "账号"
+        },
+        {
+          "key": "password",
+          "title": "密码",
+          "secure": true
+        },
+        {
+          "key": "custom",
+          "title": "登陆网站"
+        },
+        {
+          "key": "custom",
+          "title": "备注"
         }
       ]
     }
