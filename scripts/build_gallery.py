@@ -138,8 +138,39 @@ def human_size(n: int) -> str:
     return f"{n} B"
 
 
+def collect_images(script_stem: str):
+    """收集 项目展示图/<脚本名>/ 目录下全部截图，按文件名序号自然排序。
+
+    优先读子目录（支持多图按序号轮播）；子目录不存在或为空时，
+    退回旧的平铺命名（项目展示图/<脚本名>.png）单张图。
+    """
+    imgs = []
+    d = IMAGE_DIR / script_stem
+    if d.is_dir():
+        for p in d.iterdir():
+            if p.is_file() and p.suffix.lower() in (".png", ".jpg", ".jpeg", ".gif", ".webp"):
+                imgs.append(p)
+
+    if not imgs:
+        for ext in (".png", ".jpg", ".jpeg", ".gif"):
+            c = IMAGE_DIR / (script_stem + ext)
+            if c.exists():
+                imgs.append(c)
+                break
+
+    # 自然排序：按文件名中的数字排（1.png、2.png、…、10.png），无数字的按名字排
+    def num_key(p: Path):
+        m = re.search(r"(\d+)", p.stem)
+        if m:
+            return (0, int(m.group(1)), p.stem)
+        return (1, 0, p.stem)
+
+    imgs.sort(key=num_key)
+    return imgs
+
+
 def collect_entries():
-    """收集根目录 .scripting 文件，并匹配项目展示图目录里的同名图片。"""
+    """收集根目录 .scripting 文件，并匹配项目展示图目录里的截图（可多张）。"""
     scripts = sorted(
         (
             p
@@ -159,18 +190,12 @@ def collect_entries():
 
     entries = []
     for s in scripts:
-        img = None
-        for ext in (".png", ".jpg", ".jpeg", ".gif"):
-            c = IMAGE_DIR / (s.stem + ext)
-            if c.exists():
-                img = c
-                break
         entries.append(
             {
                 "name": s.stem,
                 "file": s,
                 "size": human_size(s.stat().st_size),
-                "img": img,
+                "imgs": collect_images(s.stem),
             }
         )
     return entries
@@ -189,9 +214,10 @@ def update_readme(entries):
 
     rows = []
     for e in entries:
+        first_img = e["imgs"][0] if e["imgs"] else None
         img_md = (
-            f"![{e['name']}]({quote(str(e['img']), safe='/')})"
-            if e["img"]
+            f"![{e['name']}]({quote(str(first_img), safe='/')})"
+            if first_img
             else "--"
         )
         file_rel = quote(str(e["file"]), safe="/")
@@ -230,10 +256,13 @@ def write_gallery(entries):
         href = import_scheme_url(str(e["file"]))
         mtime = last_commit_time(str(e["file"]))
         preview = ""
-        if e["img"]:
-            preview = (
-                '<img class="preview-src" src="{}" alt="" style="display:none">'
-            ).format(quote(str(e["img"]), safe="/"))
+        if e["imgs"]:
+            # 每个脚本可有多张展示图（项目展示图/<脚本名>/1.png、2.png…），
+            # 全部写进卡片，长按预览时按序轮播
+            preview = "\n".join(
+                '<img class="preview-src" src="{}" alt="" style="display:none">'.format(quote(str(p), safe="/"))
+                for p in e["imgs"]
+            )
         cards.append(
             '\n      <a class="card" href="{}" data-mtime="{}" target="_blank">\n'
             '        {}\n'
@@ -311,7 +340,14 @@ def write_gallery(entries):
   .lightbox-img { width: 92%; height: 92%; border-radius: 8px;
                   background-repeat: no-repeat; background-position: center;
                   background-size: contain; box-shadow: 0 10px 40px rgba(0,0,0,.6);
-                  pointer-events: none; }
+                  pointer-events: none; transition: opacity .18s; }
+  .lightbox-page { position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%);
+                   min-width: 46px; text-align: center; padding: 5px 12px; border-radius: 12px;
+                   color: #e6edf3; font-size: 12px; font-weight: 600; letter-spacing: .5px;
+                   background: rgba(22,27,34,.72); border: 1px solid rgba(255,255,255,.14);
+                   -webkit-user-select: none; user-select: none; pointer-events: none;
+                   opacity: 0; transition: opacity .15s; }
+  .lightbox-page.show { opacity: 1; }
   .modal { position: fixed; inset: 0; background: rgba(0,0,0,.72); display: none;
            align-items: center; justify-content: center; z-index: 120; padding: 24px; }
   .modal.open { display: flex; }
@@ -357,7 +393,10 @@ def write_gallery(entries):
 </div>
 <div class="gallery" id="gallery">__CARDS__
 </div>
-<div class="lightbox" id="lightbox"><div class="lightbox-img" id="lightboxImg"></div></div>
+<div class="lightbox" id="lightbox">
+  <div class="lightbox-img" id="lightboxImg"></div>
+  <div class="lightbox-page" id="lightboxPage"></div>
+</div>
 <div class="modal" id="modal">
   <div class="modal-box">
     <div class="modal-title"><span id="modalTitle"></span><button class="icon-btn" id="modalX" title="关闭">✕</button></div>
@@ -407,29 +446,74 @@ def write_gallery(entries):
   document.getElementById('modalClose').addEventListener('click', closeModal);
   document.getElementById('modalX').addEventListener('click', closeModal);
 
-  // 长按脚本名 → 全屏预览图片（背景图，无选中/放大行为），松手退出
+  // 长按脚本名 → 全屏轮播预览截图（背景图，无选中/放大行为），松手退出。
+  // 一个脚本可有多张展示图（项目展示图/<脚本名>/1.png、2.png…），
+  // 长按后按序号自动轮播，底部页码指示当前第几张；单张则静态显示。
   // 用 Pointer Events + setPointerCapture：长按触发后 lightbox 覆盖层出现
   // 会遮挡手指下的卡片，iOS 26 可能因此对触摸序列派发取消/结束事件导致
   // 预览自动关闭；捕获指针后事件强制派发到卡片，遮挡不影响，
   // 按住多久预览就稳定显示多久。
   const lightbox = document.getElementById('lightbox');
   const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxPage = document.getElementById('lightboxPage');
   let pressTimer = null;
   let previewed = false;
   let suppressClick = false;
+  let carouselTimer = null;
+  let fadeToken = 0;
   let startX = 0, startY = 0;
 
+  function stopCarousel() {
+    if (carouselTimer) { clearInterval(carouselTimer); carouselTimer = null; }
+  }
+
   function closeLightbox() {
+    fadeToken++;              // 作废任何进行中的淡入淡出回调
+    stopCarousel();
     lightbox.classList.remove('open');
     lightboxImg.style.backgroundImage = '';
+    lightboxImg.style.opacity = 1;
+    lightboxPage.classList.remove('show');
     previewed = false;
   }
   lightbox.addEventListener('click', closeLightbox);
 
+  // 显示第 i 张；fade=true 时淡出→换图→淡入，轮播切换更平滑
+  function showCarouselImage(imgs, i, fade) {
+    const idx = ((i % imgs.length) + imgs.length) % imgs.length;
+    if (imgs.length > 1) {
+      lightboxPage.textContent = (idx + 1) + ' / ' + imgs.length;
+      lightboxPage.classList.add('show');
+    }
+    if (fade) {
+      const token = ++fadeToken;
+      lightboxImg.style.opacity = 0;
+      setTimeout(function () {
+        if (token !== fadeToken) return;   // 期间已关闭/切换，丢弃
+        lightboxImg.style.backgroundImage = "url('" + imgs[idx] + "')";
+        lightboxImg.style.opacity = 1;
+      }, 180);
+    } else {
+      fadeToken++;
+      lightboxImg.style.backgroundImage = "url('" + imgs[idx] + "')";
+    }
+    return idx;
+  }
+
+  // 多图则每 2 秒自动切到下一张
+  function startCarousel(imgs, from) {
+    stopCarousel();
+    if (imgs.length <= 1) return;
+    let cur = from;
+    carouselTimer = setInterval(function () {
+      cur = showCarouselImage(imgs, cur + 1, true);
+    }, 2000);
+  }
+
   cards.forEach(function (card) {
-    const srcEl = card.querySelector('.preview-src');
-    if (!srcEl) return;
-    const imgSrc = srcEl.getAttribute('src');
+    const srcEls = card.querySelectorAll('.preview-src');
+    if (!srcEls.length) return;
+    const imgs = Array.prototype.map.call(srcEls, function (el) { return el.getAttribute('src'); });
 
     // 只取消未触发的长按计时，不影响已经打开的预览
     function cancelPress() {
@@ -450,8 +534,10 @@ def write_gallery(entries):
       startY = e.clientY;
       pressTimer = setTimeout(function () {
         previewed = true;
-        lightboxImg.style.backgroundImage = "url('" + imgSrc + "')";
+        stopCarousel();
+        const first = showCarouselImage(imgs, 0, false);
         lightbox.classList.add('open');
+        startCarousel(imgs, first);
       }, 450);
     }
     // 手指明显移动（滚动意图）才取消长按；微小抖动（iOS 常见）不影响
