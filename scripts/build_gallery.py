@@ -15,25 +15,40 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import quote
 
-REPO = "vvvvveng/Scripting-releases"
+REPO = "vvvvvveng/Scripting-releases"
 BRANCH = "main"
 SCRIPT_EXT = ".scripting"
 IMAGE_DIR = Path("项目展示图")
 # 文件名包含这些关键词的脚本不展示
 SKIP_KEYWORDS = ["请勿下载"]
 # 置顶脚本：名字包含这些关键词的排在最前面（可多写几个，越靠前越优先）
-PIN_KEYWORDS = ["脚本管理工具"]
+PIN_KEYWORDS = ["脚本管理工具", "🐝密码管理器"]
 
 
 def import_url(file_name: str) -> str:
-    """构造 Scripting 一键导入链接。
+    """构造 Scripting 导入落地页链接（README 用）。
 
     下载地址走 github.io 域名（Pages 已启用），
     国内网络可正常访问，避免 raw.githubusercontent.com 被墙导致下载失败。
+    落地页在桌面浏览器也能打开，适合放在 GitHub 网页上的 README。
     """
     raw = f"https://vvvvvveng.github.io/Scripting-releases/{file_name}"
     payload = quote(f'["{raw}"]', safe="")
     return f"https://scripting.fun/import_scripts?urls={payload}"
+
+
+def import_scheme_url(file_name: str) -> str:
+    """构造 Scripting 一键导入深链（gallery.html 用）。
+
+    与落地页（scripting.fun/import_scripts）不同：深链直接用 scripting:// 自定义
+    协议唤起 Scripting 应用导入页，不经过网页跳转。脚本内 WebView 展示 gallery 时，
+    只需把非 http(s) 请求交给系统（Safari.openURL）即可正常弹出安装，
+    各脚本无需再单独针对 scripting.fun 落地页写拦截逻辑。
+    格式与 Scripting 官方 Script.createImportScriptsURLScheme 一致。
+    """
+    raw = f"https://vvvvvveng.github.io/Scripting-releases/{file_name}"
+    payload = quote(f'["{raw}"]', safe="")
+    return f"scripting://import_scripts?urls={payload}"
 
 
 def last_commit_time(file_name: str) -> int:
@@ -205,14 +220,14 @@ def write_gallery(entries):
     # 卡片点击跳转 Scripting 一键导入页，长按卡片预览展示图。
     # 预览用 CSS 背景图而非 <img>：背景图不是"图片"，长按时不会触发
     # iOS 的选中/放大镜/图片菜单，预览图永远清晰原样显示。
-    # 更新时间与版本号固定在卡片下方（版本号绿色框、左下角）。
+    # 更新时间与版本号固定在卡片右下角。
     # 长按卡片预览展示图（长按设定与 2026-08-22 15:27 提交 8ce8e20000 一致：
     # Pointer Events + setPointerCapture，lightbox 用 touch-action:none /
     # user-select:none / pointer-events:none 保证真机长按稳定）。
 
     cards = []
     for e in entries:
-        href = import_url(str(e["file"]))
+        href = import_scheme_url(str(e["file"]))
         mtime = last_commit_time(str(e["file"]))
         preview = ""
         if e["img"]:
@@ -224,7 +239,10 @@ def write_gallery(entries):
             '        {}\n'
             '        <div class="meta">\n'
             '          <div class="name">{}</div>\n'
-            '          <div class="time-bottom"><span class="ver">v{}</span> · 🕒 {}</div>\n'
+            '          <div class="time-bottom">\n'
+            '            <span class="ver">v{}</span>\n'
+            '            <span class="time">🕒 {}</span>\n'
+            '          </div>\n'
             "        </div>\n"
             "      </a>".format(href, mtime, preview, e["name"], read_version(str(e["file"])), format_time(mtime))
         )
@@ -239,20 +257,21 @@ def write_gallery(entries):
   * { box-sizing: border-box; }
   body { margin: 0; font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
          background: #0d1117; color: #e6edf3; }
-  header { position: relative; padding: 58px 20px 24px; text-align: center; }
+  header { position: relative; padding: 72px 20px 40px; text-align: center; }
   header h1 { margin: 0 0 8px; font-size: 28px; }
-  header p { margin: 0; color: #8b949e; font-size: 14px; }
-  header .note { margin: 8px 0 0; color: #6e7681; font-size: 11px; text-align: left; }
-  .btn-group { position: absolute; top: 14px; right: 24px; display: flex; gap: 14px; }
+  header .subtitle { position: absolute; top: 22px; right: 24px; margin: 0;
+                     color: #6e7681; font-size: 12px; }
+  .btn-group { position: absolute; top: 14px; left: 24px; display: flex; gap: 10px; }
   .btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
          color: #c9d1d9; font-size: 12px; font-weight: 500; text-decoration: none;
          background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.14);
          border-radius: 8px; backdrop-filter: blur(8px);
          transition: background .15s, border-color .15s, color .15s; }
   .btn:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.28); color: #fff; }
-  .toolbar { max-width: 1080px; margin: 0 auto 20px; padding: 0 20px;
-             display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-  .search { width: 320px; padding: 8px 14px; background: #161b22; color: #e6edf3;
+  .toolbar { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+  .note-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 10px; }
+  .toolbar .note { margin: 0; color: #6e7681; font-size: 11px; }
+  .search { width: 100%; box-sizing: border-box; padding: 8px 14px; background: #161b22; color: #e6edf3;
             border: 1px solid #30363d; border-radius: 8px; font-size: 16px; outline: none;
             transition: border-color .15s, box-shadow .15s; }
   .search:focus { border-color: #3fb950; box-shadow: 0 0 0 3px rgba(63,185,80,.15); }
@@ -261,16 +280,17 @@ def write_gallery(entries):
           border: 1px solid #30363d; border-radius: 8px; font-size: 13px; outline: none;
           cursor: pointer; transition: border-color .15s; }
   .sort:focus { border-color: #3fb950; }
-  .gallery { max-width: 1080px; margin: 0 auto; padding: 8px 20px 60px;
+  .gallery { max-width: 1080px; margin: 0 auto; padding: 4px 20px 60px;
              display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
   .card { display: block; background: #161b22; border: 1px solid #30363d;
           border-radius: 12px; overflow: hidden; text-decoration: none; color: inherit;
           transition: transform .15s, border-color .15s;
           -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   .card:hover { transform: translateY(-4px); border-color: #3fb950; }
-  .meta { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 30px 14px 18px; }
-  .time-bottom { align-self: flex-start; margin-top: 4px; color: #6e7681; font-size: 10px;
-                 display: flex; align-items: center; gap: 5px; }
+  .meta { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 14px 40px; }
+  .time-bottom { position: absolute; bottom: 12px; left: 14px; right: 14px; margin-top: 0;
+                 color: #6e7681; font-size: 10px;
+                 display: flex; align-items: center; justify-content: space-between; }
   .name { font-size: 15px; font-weight: 600; text-align: center; overflow: hidden;
           text-overflow: ellipsis; white-space: nowrap; }
   .ver { display: inline-block; padding: 1px 9px; border-radius: 10px;
@@ -312,9 +332,8 @@ def write_gallery(entries):
 </head>
 <body>
 <header>
-  <h1>🛠 Scripting 作品合集</h1>
-  <p>由 WWWeng🐝 维护 · 共 __COUNT__ 件作品</p>
-  <p class="note">注：长按卡片可预览脚本截图</p>
+  <h1>🛠 Scripting 合集</h1>
+  <p class="subtitle">由 WWWeng🐝 维护</p>
   <div class="btn-group">
     <a class="btn" href="https://t.me/wwwengshare" target="_blank">
       <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
@@ -328,10 +347,13 @@ def write_gallery(entries):
 </header>
 <div class="toolbar">
   <input id="search" class="search" type="search" placeholder="🔍 搜索脚本…">
-  <select id="sort" class="sort">
-    <option value="default">默认排序</option>
-    <option value="recent">最新修改</option>
-  </select>
+  <div class="note-row">
+    <p class="note">注：长按卡片可预览脚本截图</p>
+    <select id="sort" class="sort">
+      <option value="default">默认排序</option>
+      <option value="recent">最新修改</option>
+    </select>
+  </div>
 </div>
 <div class="gallery" id="gallery">__CARDS__
 </div>
@@ -471,9 +493,7 @@ def write_gallery(entries):
 </body>
 </html>
 """
-    page = page.replace("__COUNT__", str(len(entries))).replace(
-        "__CARDS__", "".join(cards)
-    )
+    page = page.replace("__CARDS__", "".join(cards))
 
     Path("gallery.html").write_text(page, encoding="utf-8")
     print("✅ gallery.html 已生成")

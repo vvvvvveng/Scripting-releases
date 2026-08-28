@@ -8,20 +8,21 @@
   * { box-sizing: border-box; }
   body { margin: 0; font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
          background: #0d1117; color: #e6edf3; }
-  header { position: relative; padding: 58px 20px 24px; text-align: center; }
+  header { position: relative; padding: 72px 20px 40px; text-align: center; }
   header h1 { margin: 0 0 8px; font-size: 28px; }
-  header p { margin: 0; color: #8b949e; font-size: 14px; }
-  header .note { margin: 8px 0 0; color: #6e7681; font-size: 11px; text-align: left; }
-  .btn-group { position: absolute; top: 14px; right: 24px; display: flex; gap: 14px; }
+  header .subtitle { position: absolute; top: 22px; right: 24px; margin: 0;
+                     color: #6e7681; font-size: 12px; }
+  .btn-group { position: absolute; top: 14px; left: 24px; display: flex; gap: 10px; }
   .btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
          color: #c9d1d9; font-size: 12px; font-weight: 500; text-decoration: none;
          background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.14);
          border-radius: 8px; backdrop-filter: blur(8px);
          transition: background .15s, border-color .15s, color .15s; }
   .btn:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.28); color: #fff; }
-  .toolbar { max-width: 1080px; margin: 0 auto 20px; padding: 0 20px;
-             display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-  .search { width: 320px; padding: 8px 14px; background: #161b22; color: #e6edf3;
+  .toolbar { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+  .note-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 10px; }
+  .toolbar .note { margin: 0; color: #6e7681; font-size: 11px; }
+  .search { width: 100%; box-sizing: border-box; padding: 8px 14px; background: #161b22; color: #e6edf3;
             border: 1px solid #30363d; border-radius: 8px; font-size: 16px; outline: none;
             transition: border-color .15s, box-shadow .15s; }
   .search:focus { border-color: #3fb950; box-shadow: 0 0 0 3px rgba(63,185,80,.15); }
@@ -30,16 +31,17 @@
           border: 1px solid #30363d; border-radius: 8px; font-size: 13px; outline: none;
           cursor: pointer; transition: border-color .15s; }
   .sort:focus { border-color: #3fb950; }
-  .gallery { max-width: 1080px; margin: 0 auto; padding: 8px 20px 60px;
+  .gallery { max-width: 1080px; margin: 0 auto; padding: 4px 20px 60px;
              display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
   .card { display: block; background: #161b22; border: 1px solid #30363d;
           border-radius: 12px; overflow: hidden; text-decoration: none; color: inherit;
           transition: transform .15s, border-color .15s;
           -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   .card:hover { transform: translateY(-4px); border-color: #3fb950; }
-  .meta { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 30px 14px 18px; }
-  .time-bottom { align-self: flex-start; margin-top: 4px; color: #6e7681; font-size: 10px;
-                 display: flex; align-items: center; gap: 5px; }
+  .meta { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 14px 40px; }
+  .time-bottom { position: absolute; bottom: 12px; left: 14px; right: 14px; margin-top: 0;
+                 color: #6e7681; font-size: 10px;
+                 display: flex; align-items: center; justify-content: space-between; }
   .name { font-size: 15px; font-weight: 600; text-align: center; overflow: hidden;
           text-overflow: ellipsis; white-space: nowrap; }
   .ver { display: inline-block; padding: 1px 9px; border-radius: 10px;
@@ -81,9 +83,8 @@
 </head>
 <body>
 <header>
-  <h1>🛠 Scripting 作品合集</h1>
-  <p>由 WWWeng🐝 维护 · 共 4 件作品</p>
-  <p class="note">注：长按卡片可预览脚本截图</p>
+  <h1>🛠 Scripting 合集</h1>
+  <p class="subtitle">由 WWWeng🐝 维护</p>
   <div class="btn-group">
     <a class="btn" href="https://t.me/wwwengshare" target="_blank">
       <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
@@ -97,38 +98,53 @@
 </header>
 <div class="toolbar">
   <input id="search" class="search" type="search" placeholder="🔍 搜索脚本…">
-  <select id="sort" class="sort">
-    <option value="default">默认排序</option>
-    <option value="recent">最新修改</option>
-  </select>
+  <div class="note-row">
+    <p class="note">注：长按卡片可预览脚本截图</p>
+    <select id="sort" class="sort">
+      <option value="default">默认排序</option>
+      <option value="recent">最新修改</option>
+    </select>
+  </div>
 </div>
 <div class="gallery" id="gallery">
-      <a class="card" href="https://scripting.fun/import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2F%E8%84%9A%E6%9C%AC%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7.scripting%22%5D" data-mtime="1787285612" target="_blank">
+      <a class="card" href="scripting://import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2F%E8%84%9A%E6%9C%AC%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7.scripting%22%5D" data-mtime="1787285612" target="_blank">
         <img class="preview-src" src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/%E8%84%9A%E6%9C%AC%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7.png" alt="" style="display:none">
         <div class="meta">
           <div class="name">脚本管理工具</div>
-          <div class="time-bottom"><span class="ver">v5.0.70</span> · 🕒 2026-08-21 12:13</div>
+          <div class="time-bottom">
+            <span class="ver">v5.0.70</span>
+            <span class="time">🕒 2026-08-21 12:13</span>
+          </div>
         </div>
       </a>
-      <a class="card" href="https://scripting.fun/import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2FDeepSeek%E7%94%A8%E9%87%8F%E4%BD%99%E9%A2%9D%E6%9F%A5%E8%AF%A2.scripting%22%5D" data-mtime="1786928499" target="_blank">
+      <a class="card" href="scripting://import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2F%F0%9F%90%9D%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86%E5%99%A8.scripting%22%5D" data-mtime="1787760279" target="_blank">
+        <img class="preview-src" src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/%F0%9F%90%9D%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86%E5%99%A8.png" alt="" style="display:none">
+        <div class="meta">
+          <div class="name">🐝密码管理器</div>
+          <div class="time-bottom">
+            <span class="ver">v2.1.40</span>
+            <span class="time">🕒 2026-08-27 00:04</span>
+          </div>
+        </div>
+      </a>
+      <a class="card" href="scripting://import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2FDeepSeek%E7%94%A8%E9%87%8F%E4%BD%99%E9%A2%9D%E6%9F%A5%E8%AF%A2.scripting%22%5D" data-mtime="1786928499" target="_blank">
         <img class="preview-src" src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/DeepSeek%E7%94%A8%E9%87%8F%E4%BD%99%E9%A2%9D%E6%9F%A5%E8%AF%A2.png" alt="" style="display:none">
         <div class="meta">
           <div class="name">DeepSeek用量余额查询</div>
-          <div class="time-bottom"><span class="ver">v1.8.1</span> · 🕒 2026-08-17 09:01</div>
+          <div class="time-bottom">
+            <span class="ver">v1.8.1</span>
+            <span class="time">🕒 2026-08-17 09:01</span>
+          </div>
         </div>
       </a>
-      <a class="card" href="https://scripting.fun/import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2F%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7.scripting%22%5D" data-mtime="1786669142" target="_blank">
+      <a class="card" href="scripting://import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2F%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7.scripting%22%5D" data-mtime="1786669142" target="_blank">
         <img class="preview-src" src="%E9%A1%B9%E7%9B%AE%E5%B1%95%E7%A4%BA%E5%9B%BE/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7.png" alt="" style="display:none">
         <div class="meta">
           <div class="name">正则表达式测试工具</div>
-          <div class="time-bottom"><span class="ver">v1.0.2</span> · 🕒 2026-08-14 08:59</div>
-        </div>
-      </a>
-      <a class="card" href="https://scripting.fun/import_scripts?urls=%5B%22https%3A%2F%2Fvvvvvveng.github.io%2FScripting-releases%2F%F0%9F%90%9D%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86%E5%99%A8.scripting%22%5D" data-mtime="1787666104" target="_blank">
-        
-        <div class="meta">
-          <div class="name">🐝密码管理器</div>
-          <div class="time-bottom"><span class="ver">v2.0.0</span> · 🕒 2026-08-25 21:55</div>
+          <div class="time-bottom">
+            <span class="ver">v1.0.2</span>
+            <span class="time">🕒 2026-08-14 08:59</span>
+          </div>
         </div>
       </a>
 </div>
