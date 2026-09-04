@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-09-04 21:46:10",
+  "exportedAt": "2026-09-04 22:30:59",
   "templates": [
     {
       "name": "网页",
@@ -211,6 +211,11 @@
           "secure": false
         },
         {
+          "key": "custom",
+          "title": "邮件",
+          "secure": false
+        },
+        {
           "key": "token",
           "title": "Token",
           "secure": true
@@ -220,6 +225,17 @@
           "title": "网址",
           "secure": false,
           "defaultValue": "https://github.com/login"
+        },
+        {
+          "key": "custom",
+          "title": "ssh",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "token获取网址",
+          "secure": false,
+          "defaultValue": "https://github.com/settings/tokens"
         },
         {
           "key": "custom",
