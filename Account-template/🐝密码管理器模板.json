@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-09-04 21:44:53",
+  "exportedAt": "2026-09-04 21:46:10",
   "templates": [
     {
       "name": "网页",
@@ -147,11 +147,6 @@
           "title": "网站",
           "secure": false,
           "defaultValue": "https://dash.cloudflare.com"
-        },
-        {
-          "key": "custom",
-          "title": "备注",
-          "secure": false
         },
         {
           "key": "custom",
