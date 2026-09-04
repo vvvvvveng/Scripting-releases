@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-09-03 13:53:44",
+  "exportedAt": "2026-09-04 21:44:53",
   "templates": [
     {
       "name": "网页",
@@ -177,6 +177,12 @@
           "key": "custom",
           "title": "绑定域名",
           "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "token生成网页",
+          "secure": false,
+          "defaultValue": "https://dash.cloudflare.com/profile/api-tokens"
         },
         {
           "key": "custom",
