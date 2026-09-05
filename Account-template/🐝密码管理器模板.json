@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-09-04 22:30:59",
+  "exportedAt": "2026-09-05 15:05:44",
   "templates": [
     {
       "name": "网页",
@@ -54,6 +54,11 @@
         {
           "key": "custom",
           "title": "标题",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "登录方式",
           "secure": false
         },
         {
