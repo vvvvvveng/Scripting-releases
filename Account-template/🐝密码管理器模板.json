@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-09-06 15:36:14",
+  "exportedAt": "2026-09-06 18:15:31",
   "templates": [
     {
       "name": "Web",
@@ -8,6 +8,12 @@
         {
           "key": "custom",
           "title": "标题",
+          "secure": false,
+          "wrap": false
+        },
+        {
+          "key": "custom",
+          "title": "登录方式",
           "secure": false,
           "wrap": false
         },
@@ -68,6 +74,12 @@
         {
           "key": "custom",
           "title": "标题",
+          "secure": false,
+          "wrap": false
+        },
+        {
+          "key": "custom",
+          "title": "登录方式",
           "secure": false,
           "wrap": false
         },
@@ -199,13 +211,28 @@
         },
         {
           "key": "custom",
-          "title": "邀请码地址",
+          "title": "查看用量网址",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "查看模型网址",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "查看密钥网址",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "动态口令(2FA)",
           "secure": false,
           "wrap": false
         },
         {
           "key": "custom",
-          "title": "动态口令(2FA)",
+          "title": "邀请码地址",
           "secure": false,
           "wrap": false
         },
