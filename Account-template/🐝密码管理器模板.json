@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-09-06 18:15:31",
+  "exportedAt": "2026-09-06 19:48:29",
   "templates": [
     {
       "name": "Web",
@@ -212,17 +212,20 @@
         {
           "key": "custom",
           "title": "查看用量网址",
-          "secure": false
+          "secure": false,
+          "wrap": false
         },
         {
           "key": "custom",
           "title": "查看模型网址",
-          "secure": false
+          "secure": false,
+          "wrap": false
         },
         {
           "key": "custom",
           "title": "查看密钥网址",
-          "secure": false
+          "secure": false,
+          "wrap": false
         },
         {
           "key": "custom",
