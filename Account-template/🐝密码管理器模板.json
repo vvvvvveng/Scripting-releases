@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-09-06 19:48:29",
+  "exportedAt": "2026-09-09 04:41:33",
   "templates": [
     {
       "name": "Web",
@@ -296,13 +296,13 @@
         },
         {
           "key": "custom",
-          "title": "CLOUDFLARE _API_TOKEN",
+          "title": "API_TOKEN",
           "secure": true,
           "wrap": false
         },
         {
           "key": "custom",
-          "title": "CLOUDFLARE_ZONE_ID",
+          "title": "ZONE_ID",
           "secure": false,
           "wrap": false
         },
