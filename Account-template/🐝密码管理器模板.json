@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-09-09 04:41:33",
+  "exportedAt": "2026-09-11 12:40:24",
   "templates": [
     {
       "name": "Web",
@@ -172,6 +172,11 @@
           "title": "用户名",
           "secure": false,
           "wrap": false
+        },
+        {
+          "key": "custom",
+          "title": "手机",
+          "secure": false
         },
         {
           "key": "custom",
