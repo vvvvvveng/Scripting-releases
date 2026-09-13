@@ -243,7 +243,11 @@ def update_readme(entries):
 def write_gallery(entries):
     # 图片用相对路径（gallery.html 与 项目展示图/ 同处仓库根目录），
     # 这样在 GitHub Pages 上图片走 github.io 域名加载，国内访问更稳定。
-    # 卡片点击跳转 Scripting 一键导入页，长按卡片预览展示图。
+    # 卡片单击跳 Scripting 一键导入（scripting:// 深链），长按卡片预览展示图。
+    # 注意：卡片不能加 target="_blank"——脚本内 WebView 会把 _blank 当“新窗口”
+    # 请求而静默丢弃，导致点脚本名毫无反应；改成同页导航后即可正常唤起安装。
+    # 另外卡片额外带上 https 导入落地页（data-import-https），供 WebView 不处理
+    # 自定义协议时兜底回退，保证单击一定有反馈。
     # 预览用 CSS 背景图而非 <img>：背景图不是"图片"，长按时不会触发
     # iOS 的选中/放大镜/图片菜单，预览图永远清晰原样显示。
     # 更新时间与版本号固定在卡片右下角。
@@ -254,6 +258,7 @@ def write_gallery(entries):
     cards = []
     for e in entries:
         href = import_scheme_url(str(e["file"]))
+        href_https = import_url(str(e["file"]))
         mtime = last_commit_time(str(e["file"]))
         preview = ""
         if e["imgs"]:
@@ -264,7 +269,7 @@ def write_gallery(entries):
                 for p in e["imgs"]
             )
         cards.append(
-            '\n      <a class="card" href="{}" data-mtime="{}" target="_blank">\n'
+            '\n      <a class="card" href="{}" data-import-https="{}" data-mtime="{}">\n'
             '        {}\n'
             '        <div class="meta">\n'
             '          <div class="name">{}</div>\n'
@@ -273,7 +278,7 @@ def write_gallery(entries):
             '            <span class="time">🕒 {}</span>\n'
             '          </div>\n'
             "        </div>\n"
-            "      </a>".format(href, mtime, preview, e["name"], read_version(str(e["file"])), format_time(mtime))
+            "      </a>".format(href, href_https, mtime, preview, e["name"], read_version(str(e["file"])), format_time(mtime))
         )
 
     page = """<!DOCTYPE html>
@@ -541,6 +546,7 @@ def write_gallery(entries):
       cancelPress();
       if (previewed) {
         closeLightbox();
+        previewed = false;      // 预览结束必须复位，否则会持续吞掉之后的正常点击
         suppressClick = true;
       }
     }
@@ -560,7 +566,7 @@ def write_gallery(entries):
     // 手指明显移动（滚动意图）才取消长按；微小抖动（iOS 常见）不影响
     function movePress(e) {
       if (Math.abs(e.clientX - startX) > 30 || Math.abs(e.clientY - startY) > 30) {
-        if (previewed) { closeLightbox(); suppressClick = true; }
+        if (previewed) { closeLightbox(); previewed = false; suppressClick = true; }
         cancelPress();
       }
     }
@@ -577,10 +583,33 @@ def write_gallery(entries):
     card.addEventListener('pointercancel', endPress);
     // 长按预览过 → 拦截 iOS 松手后补发的 click，避免误触导入
     card.addEventListener('click', function (e) {
-      if (previewed || suppressClick) {
+      const afterPreview = previewed || suppressClick;
+      previewed = false; suppressClick = false;
+      if (afterPreview) {          // 长按预览后系统补发的 click：忽略
         e.preventDefault(); e.stopPropagation();
-        previewed = false; suppressClick = false;
+        return;
       }
+      // 正常单击：不依赖 <a> 默认行为，显式导航后再做兜底
+      const deepLink = card.getAttribute('href') || '';
+      const httpsLink = card.getAttribute('data-import-https') || '';
+      if (!deepLink) return;
+      e.preventDefault();
+
+      let leftPage = false;
+      const onVisibleChange = function () {
+        if (document.visibilityState === 'hidden') leftPage = true;
+      };
+      document.addEventListener('visibilitychange', onVisibleChange);
+      // 1) 先走深链，正常情况下会唤起 Scripting 并弹出安装
+      window.location.href = deepLink;
+      // 2) 若页面随后没有离开（宿主 WebView 未处理自定义协议），
+      //    回退到官方导入落地页，保证单击一定有反应
+      window.setTimeout(function () {
+        document.removeEventListener('visibilitychange', onVisibleChange);
+        if (!leftPage && document.visibilityState !== 'hidden' && httpsLink) {
+          window.location.href = httpsLink;
+        }
+      }, 900);
     });
   });
 
@@ -589,6 +618,7 @@ def write_gallery(entries):
   document.addEventListener('pointerup', function () {
     if (previewed) {
       closeLightbox();
+      previewed = false;
       suppressClick = true;
     }
   });
