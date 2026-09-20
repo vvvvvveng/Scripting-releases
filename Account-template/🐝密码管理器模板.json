@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-09-18 08:48:32",
+  "exportedAt": "2026-09-20 13:01:36",
   "templates": [
     {
       "name": "Web",
@@ -390,6 +390,16 @@
           "title": "Token",
           "secure": true,
           "wrap": false
+        },
+        {
+          "key": "custom",
+          "title": "仓库名",
+          "secure": false
+        },
+        {
+          "key": "custom",
+          "title": "仓库文件夹",
+          "secure": false
         },
         {
           "key": "custom",
