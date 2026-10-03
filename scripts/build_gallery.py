@@ -243,7 +243,12 @@ def update_readme(entries):
 def write_gallery(entries):
     # 图片用相对路径（gallery.html 与 项目展示图/ 同处仓库根目录），
     # 这样在 GitHub Pages 上图片走 github.io 域名加载，国内访问更稳定。
-    # 卡片点击跳转 Scripting 一键导入页，长按卡片预览展示图。
+    # 卡片单击跳 Scripting 导入落地页（https://scripting.fun/import_scripts?urls=...）。
+    # 为什么用 https 落地页而不是 scripting:// 深链：脚本内 WebView 打不开自定义协议，
+    # 直接给深链会“点了没反应”；各脚本的 WebView 统一拦截 https 的
+    # scripting.fun/import_scripts 链接、取出 urls 参数转成深链交给系统（Safari.openURL），
+    # 所以卡片必须给 https 落地页，走宿主支持的这条通道。
+    # 另：卡片不能加 target="_blank"，WebView 会把 _blank 当“新窗口”请求静默丢弃。
     # 预览用 CSS 背景图而非 <img>：背景图不是"图片"，长按时不会触发
     # iOS 的选中/放大镜/图片菜单，预览图永远清晰原样显示。
     # 更新时间与版本号固定在卡片右下角。
@@ -253,7 +258,7 @@ def write_gallery(entries):
 
     cards = []
     for e in entries:
-        href = import_scheme_url(str(e["file"]))
+        href = import_url(str(e["file"]))
         mtime = last_commit_time(str(e["file"]))
         preview = ""
         if e["imgs"]:
@@ -264,7 +269,7 @@ def write_gallery(entries):
                 for p in e["imgs"]
             )
         cards.append(
-            '\n      <a class="card" href="{}" data-mtime="{}" target="_blank">\n'
+            '\n      <a class="card" href="{}" data-mtime="{}">\n'
             '        {}\n'
             '        <div class="meta">\n'
             '          <div class="name">{}</div>\n'
@@ -541,6 +546,7 @@ def write_gallery(entries):
       cancelPress();
       if (previewed) {
         closeLightbox();
+        previewed = false;      // 预览结束必须复位，否则会持续吞掉之后的正常点击
         suppressClick = true;
       }
     }
@@ -560,7 +566,7 @@ def write_gallery(entries):
     // 手指明显移动（滚动意图）才取消长按；微小抖动（iOS 常见）不影响
     function movePress(e) {
       if (Math.abs(e.clientX - startX) > 30 || Math.abs(e.clientY - startY) > 30) {
-        if (previewed) { closeLightbox(); suppressClick = true; }
+        if (previewed) { closeLightbox(); previewed = false; suppressClick = true; }
         cancelPress();
       }
     }
@@ -576,10 +582,13 @@ def write_gallery(entries):
     // 长按手势结束时系统可能发 pointercancel 而非 pointerup，同样关闭预览
     card.addEventListener('pointercancel', endPress);
     // 长按预览过 → 拦截 iOS 松手后补发的 click，避免误触导入
+    // （正常单击不做任何拦截，直接走 <a href="…import_scripts…"> 默认导航，
+    //   由宿主 WebView 拦截落地页并转成 scripting:// 深链）
     card.addEventListener('click', function (e) {
-      if (previewed || suppressClick) {
+      const afterPreview = previewed || suppressClick;
+      previewed = false; suppressClick = false;
+      if (afterPreview) {
         e.preventDefault(); e.stopPropagation();
-        previewed = false; suppressClick = false;
       }
     });
   });
@@ -589,6 +598,7 @@ def write_gallery(entries):
   document.addEventListener('pointerup', function () {
     if (previewed) {
       closeLightbox();
+      previewed = false;
       suppressClick = true;
     }
   });
