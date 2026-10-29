@@ -285,15 +285,10 @@ def write_gallery(entries):
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="color-scheme" content="dark">
-<meta name="theme-color" content="#0d1117">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Scripting 作品合集</title>
 <style>
   * { box-sizing: border-box; }
-  /* html 也要铺底色：WebView 顶部的状态栏区与底部的 Home 条区属于 html 层，
-     只给 body 设背景时这两段会露出 WebView 默认的白底（上下白条）。 */
-  html { background: #0d1117; color-scheme: dark; }
   body { margin: 0; font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
          background: #0d1117; color: #e6edf3; }
   header { position: relative; padding: 72px 20px 40px; text-align: center; }
